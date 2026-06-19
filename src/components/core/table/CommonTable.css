@@ -1,0 +1,554 @@
+/* ========== Our theme overrides for ag-Grid (light & dark) ========== */
+/* Primary: orange; ensure grid container and content are visible */
+/* Geist font for professional typography */
+
+/* Grid wrapper and root must fill height for rows to render */
+.ag-theme-alpine,
+.ag-theme-alpine-dark {
+  height: 100%;
+  min-height: unset !important;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+}
+
+.ag-theme-alpine .ag-root-wrapper,
+.ag-theme-alpine-dark .ag-root-wrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+.ag-theme-alpine .ag-root-wrapper-body,
+.ag-theme-alpine-dark .ag-root-wrapper-body {
+  flex: 1;
+  min-height: 0;
+}
+
+.ag-theme-alpine .ag-root,
+.ag-theme-alpine-dark .ag-root {
+  height: 100%;
+  min-height: 0;
+}
+
+.ag-theme-alpine .ag-body-viewport,
+.ag-theme-alpine-dark .ag-body-viewport {
+  min-height: 100px;
+}
+
+/* Keep popup editors above the grid without behaving like a full-screen overlay */
+.ag-theme-alpine .ag-popup-editor,
+.ag-theme-alpine-dark .ag-popup-editor {
+  z-index: 60;
+}
+
+/* Fix container height for loading/empty states - don't expand unnecessarily */
+.ag-theme-alpine.ag-empty,
+.ag-theme-alpine-dark.ag-empty {
+  height: auto !important;
+}
+
+.ag-theme-alpine.ag-empty .ag-root-wrapper,
+.ag-theme-alpine-dark.ag-empty .ag-root-wrapper {
+  height: auto !important;
+}
+
+.ag-theme-alpine.ag-empty .ag-root-wrapper-body,
+.ag-theme-alpine-dark.ag-empty .ag-root-wrapper-body {
+  height: auto !important;
+}
+
+.ag-theme-alpine.ag-empty .ag-root,
+.ag-theme-alpine-dark.ag-empty .ag-root {
+  height: auto !important;
+}
+
+.ag-theme-alpine.ag-empty .ag-body-viewport,
+.ag-theme-alpine-dark.ag-empty .ag-body-viewport {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* Limit column drag ghost to header height only */
+/* Target all possible ag-Grid drag ghost classes */
+.ag-dnd-ghost,
+.ag-theme-alpine .ag-dnd-ghost,
+.ag-theme-alpine-dark .ag-dnd-ghost,
+.ag-theme-alpine .ag-drag-ghost,
+.ag-theme-alpine-dark .ag-drag-ghost,
+.ag-theme-alpine .ag-header-cell-drag,
+.ag-theme-alpine-dark .ag-header-cell-drag {
+  height: 48px !important;
+  max-height: 48px !important;
+  min-height: 48px !important;
+  overflow: hidden !important;
+  line-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* Ensure all child elements respect the header height */
+.ag-dnd-ghost *,
+.ag-theme-alpine .ag-dnd-ghost *,
+.ag-theme-alpine-dark .ag-dnd-ghost *,
+.ag-theme-alpine .ag-drag-ghost *,
+.ag-theme-alpine-dark .ag-drag-ghost *,
+.ag-theme-alpine .ag-header-cell-drag *,
+.ag-theme-alpine-dark .ag-header-cell-drag * {
+  max-height: 48px !important;
+  overflow: hidden !important;
+}
+
+.ag-dnd-ghost .ag-header-cell,
+.ag-theme-alpine .ag-dnd-ghost .ag-header-cell,
+.ag-theme-alpine-dark .ag-dnd-ghost .ag-header-cell,
+.ag-theme-alpine .ag-drag-ghost .ag-header-cell,
+.ag-theme-alpine-dark .ag-drag-ghost .ag-header-cell,
+.ag-theme-alpine .ag-header-cell-drag .ag-header-cell,
+.ag-theme-alpine-dark .ag-header-cell-drag .ag-header-cell {
+  height: 48px !important;
+  max-height: 48px !important;
+  min-height: 48px !important;
+}
+
+.ag-dnd-ghost .ag-header-cell-label,
+.ag-theme-alpine .ag-dnd-ghost .ag-header-cell-label,
+.ag-theme-alpine-dark .ag-dnd-ghost .ag-header-cell-label,
+.ag-theme-alpine .ag-drag-ghost .ag-header-cell-label,
+.ag-theme-alpine-dark .ag-drag-ghost .ag-header-cell-label,
+.ag-theme-alpine .ag-header-cell-drag .ag-header-cell-label,
+.ag-theme-alpine-dark .ag-header-cell-drag .ag-header-cell-label {
+  height: 48px !important;
+  max-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+/* Prevent drag ghost from expanding to full container height - hide body elements */
+.ag-dnd-ghost .ag-body-viewport,
+.ag-theme-alpine .ag-dnd-ghost .ag-body-viewport,
+.ag-theme-alpine-dark .ag-dnd-ghost .ag-body-viewport,
+.ag-theme-alpine .ag-drag-ghost .ag-body-viewport,
+.ag-theme-alpine-dark .ag-drag-ghost .ag-body-viewport,
+.ag-theme-alpine .ag-header-cell-drag .ag-body-viewport,
+.ag-theme-alpine-dark .ag-header-cell-drag .ag-body-viewport,
+.ag-dnd-ghost .ag-body,
+.ag-theme-alpine .ag-dnd-ghost .ag-body,
+.ag-theme-alpine-dark .ag-dnd-ghost .ag-body,
+.ag-dnd-ghost .ag-center-cols-container,
+.ag-theme-alpine .ag-dnd-ghost .ag-center-cols-container,
+.ag-theme-alpine-dark .ag-dnd-ghost .ag-center-cols-container {
+  display: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Ensure loading overlay doesn't expand container unnecessarily */
+.ag-theme-alpine .ag-overlay-loading-wrapper,
+.ag-theme-alpine-dark .ag-overlay-loading-wrapper {
+  height: auto !important;
+  min-height: 200px !important;
+  max-height: 400px !important;
+}
+
+.ag-theme-alpine .ag-overlay-no-rows-wrapper,
+.ag-theme-alpine-dark .ag-overlay-no-rows-wrapper {
+  height: auto !important;
+  min-height: 200px !important;
+  max-height: 400px !important;
+}
+
+/* Fix empty state - ensure body viewport doesn't expand unnecessarily */
+.ag-theme-alpine.ag-empty .ag-body-viewport,
+.ag-theme-alpine-dark.ag-empty .ag-body-viewport {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 200px !important;
+  max-height: 400px !important;
+  height: auto !important;
+}
+
+/* Light theme */
+.ag-theme-alpine {
+  --ag-header-height: 48px;
+  --ag-alpine-active-color: theme('colors.brand.600');
+  --ag-selected-row-background-color: color-mix(in srgb, theme('colors.brand.600') 14%, transparent);
+  --ag-row-hover-color: color-mix(in srgb, theme('colors.brand.600') 6%, transparent);
+  --ag-column-hover-color: color-mix(in srgb, theme('colors.brand.600') 6%, transparent);
+  --ag-input-focus-border-color: color-mix(in srgb, theme('colors.brand.600') 55%, transparent);
+  --ag-range-selection-background-color: color-mix(in srgb, theme('colors.brand.600') 10%, transparent);
+  --ag-background-color: theme('colors.neutral.0');
+  --ag-foreground-color: theme('colors.neutral.900');
+  --ag-border-color: theme('colors.neutral.200');
+  --ag-secondary-border-color: theme('colors.neutral.300');
+  --ag-header-background-color: theme('colors.neutral.100');
+  --ag-odd-row-background-color: theme('colors.neutral.0');
+  --ag-even-row-background-color: theme('colors.neutral.0');
+  --ag-checkbox-checked-color: theme('colors.brand.600');
+  --ag-range-selection-border-color: theme('colors.brand.600');
+  --ag-font-size: 13px;
+  --ag-row-border-color: theme('colors.neutral.200');
+  --ag-borders: solid 1px;
+  --ag-borders-critical: solid 1px;
+  --ag-border-radius: 2px;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+}
+
+.ag-theme-alpine .ag-header-cell,
+.ag-theme-alpine .ag-header-group-cell,
+.ag-theme-alpine .ag-cell,
+.ag-theme-alpine .ag-pagination-wrapper {
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Vertical column separators (light) */
+.ag-theme-alpine .ag-header-cell,
+.ag-theme-alpine .ag-header-group-cell,
+.ag-theme-alpine .ag-cell {
+  box-shadow: inset -1px 0 0 var(--ag-border-color);
+}
+
+/* Dark theme */
+.ag-theme-alpine-dark {
+  --ag-header-height: 48px;
+  --ag-alpine-active-color: theme('colors.brand.600');
+  --ag-selected-row-background-color: color-mix(in srgb, theme('colors.brand.600') 22%, transparent);
+  --ag-row-hover-color: color-mix(in srgb, theme('colors.brand.600') 10%, transparent);
+  --ag-column-hover-color: color-mix(in srgb, theme('colors.brand.600') 10%, transparent);
+  --ag-input-focus-border-color: color-mix(in srgb, theme('colors.brand.600') 55%, transparent);
+  --ag-range-selection-background-color: color-mix(in srgb, theme('colors.brand.600') 14%, transparent);
+  --ag-background-color: theme('colors.neutral-dark.100');
+  --ag-foreground-color: theme('colors.neutral-dark.950');
+  --ag-border-color: theme('colors.neutral-dark.200');
+  --ag-secondary-border-color: theme('colors.neutral-dark.300');
+  --ag-header-background-color: theme('colors.neutral-dark.200');
+  --ag-odd-row-background-color: theme('colors.neutral-dark.100');
+  --ag-even-row-background-color: theme('colors.neutral-dark.100');
+  --ag-checkbox-checked-color: theme('colors.brand.600');
+  --ag-range-selection-border-color: theme('colors.brand.600');
+  --ag-font-size: 13px;
+  --ag-row-border-color: theme('colors.neutral-dark.200');
+  --ag-borders: solid 1px;
+  --ag-borders-critical: solid 1px;
+  --ag-border-radius: 2px;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+}
+
+.ag-theme-alpine-dark .ag-header-cell,
+.ag-theme-alpine-dark .ag-header-group-cell,
+.ag-theme-alpine-dark .ag-cell,
+.ag-theme-alpine-dark .ag-pagination-wrapper {
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Vertical column separators (dark) */
+.ag-theme-alpine-dark .ag-header-cell,
+.ag-theme-alpine-dark .ag-header-group-cell,
+.ag-theme-alpine-dark .ag-cell {
+  box-shadow: inset -1px 0 0 var(--ag-border-color);
+}
+
+/* ========== Pagination: our theme (glass + primary) ========== */
+.ag-pagination-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .ag-pagination-wrapper {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.ag-pagination-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .ag-pagination-info {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.ag-pagination-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (min-width: 640px) {
+  .ag-pagination-controls {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+.ag-pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ag-pagination-button {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: color-mix(in srgb, theme('colors.neutral.0') 90%, transparent);
+  color: theme('colors.neutral.900');
+  border: 1px solid theme('colors.neutral.200');
+  border-radius: 0.125rem;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ag-pagination-button:hover:not(:disabled) {
+  background: color-mix(in srgb, theme('colors.brand.600') 10%, transparent);
+  border-color: color-mix(in srgb, theme('colors.brand.600') 35%, theme('colors.neutral.200'));
+  color: theme('colors.brand.700');
+  transform: translateY(-1px);
+}
+
+.ag-pagination-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ag-pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .ag-pagination-button {
+  background: color-mix(in srgb, theme('colors.neutral-dark.100') 92%, transparent);
+  color: theme('colors.neutral-dark.950');
+  border-color: theme('colors.neutral-dark.200');
+}
+
+.dark .ag-pagination-button:hover:not(:disabled) {
+  background: color-mix(in srgb, theme('colors.brand.600') 18%, transparent);
+  border-color: color-mix(in srgb, theme('colors.brand.600') 40%, theme('colors.neutral-dark.200'));
+  color: theme('colors.brand.200');
+}
+
+.ag-pagination-select {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  background: color-mix(in srgb, theme('colors.neutral.0') 90%, transparent);
+  border: 1px solid theme('colors.neutral.200');
+  border-radius: 0.125rem;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: theme('colors.neutral.900');
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ag-pagination-select:hover {
+  border-color: color-mix(in srgb, theme('colors.brand.600') 40%, theme('colors.neutral.200'));
+}
+
+.ag-pagination-select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, theme('colors.brand.600') 60%, theme('colors.neutral.200'));
+  box-shadow: 0 0 0 3px color-mix(in srgb, theme('colors.brand.600') 15%, transparent);
+}
+
+.dark .ag-pagination-select {
+  background: color-mix(in srgb, theme('colors.neutral-dark.100') 92%, transparent);
+  border-color: theme('colors.neutral-dark.200');
+  color: theme('colors.neutral-dark.950');
+}
+
+.dark .ag-pagination-select:hover {
+  background: theme('colors.neutral-dark.100');
+  border-color: color-mix(in srgb, theme('colors.brand.600') 40%, theme('colors.neutral-dark.200'));
+}
+
+.dark .ag-pagination-select:focus {
+  background: theme('colors.neutral-dark.100');
+  border-color: color-mix(in srgb, theme('colors.brand.600') 60%, theme('colors.neutral-dark.200'));
+  box-shadow: 0 0 0 3px color-mix(in srgb, theme('colors.brand.600') 20%, transparent);
+}
+
+.dark .ag-pagination-select option {
+  background: theme('colors.neutral-dark.100');
+  color: theme('colors.neutral-dark.950');
+  padding: 0.5rem;
+}
+
+.dark .ag-pagination-select option:hover,
+.dark .ag-pagination-select option:checked {
+  background: color-mix(in srgb, theme('colors.brand.600') 20%, transparent);
+  color: theme('colors.brand.200');
+}
+
+.ag-pagination-text {
+  font-size: 0.875rem;
+  color: theme('colors.neutral.600');
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.dark .ag-pagination-text {
+  color: theme('colors.neutral-dark.500');
+}
+
+/* Active page button styling (matches brand-600) */
+.ag-pagination-button.bg-brand-600,
+.ag-pagination-button.bg-brand-600:hover {
+  background: theme('colors.brand.600') !important;
+  color: theme('colors.neutral.0') !important;
+  border-color: theme('colors.brand.600') !important;
+}
+
+.dark .ag-pagination-button.bg-brand-600,
+.dark .ag-pagination-button.bg-brand-600:hover {
+  background: theme('colors.brand.600') !important;
+  color: theme('colors.neutral.0') !important;
+  border-color: theme('colors.brand.600') !important;
+}
+
+/* Page jump input styling */
+.ag-pagination-wrapper input[type="number"] {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  background: color-mix(in srgb, theme('colors.neutral.0') 90%, transparent);
+  border: 1px solid theme('colors.neutral.200');
+  border-radius: 0.125rem;
+  font-family: var(--font-geist-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: theme('colors.neutral.900');
+  text-align: center;
+  transition: all 0.2s;
+  appearance: textfield; /* Added standard property */
+}
+
+.ag-pagination-wrapper input[type="number"]:focus {
+  outline: none;
+  border-color: color-mix(in srgb, theme('colors.brand.600') 60%, theme('colors.neutral.200'));
+  box-shadow: 0 0 0 3px color-mix(in srgb, theme('colors.brand.600') 15%, transparent);
+}
+
+.dark .ag-pagination-wrapper input[type="number"] {
+  background: color-mix(in srgb, theme('colors.neutral-dark.100') 92%, transparent);
+  border-color: theme('colors.neutral-dark.200');
+  color: theme('colors.neutral-dark.950');
+}
+
+.dark .ag-pagination-wrapper input[type="number"]:focus {
+  border-color: color-mix(in srgb, theme('colors.brand.600') 60%, theme('colors.neutral-dark.200'));
+  box-shadow: 0 0 0 3px color-mix(in srgb, theme('colors.brand.600') 20%, transparent);
+}
+
+/* Hide number input arrows */
+.ag-pagination-wrapper input[type="number"]::-webkit-outer-spin-button,
+.ag-pagination-wrapper input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.ag-pagination-wrapper input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Column Drag Fix */
+.ag-theme-alpine,
+.ag-theme-alpine-dark {
+  --ag-dnd-ghost-height: var(--ag-header-height);
+}
+ 
+.ag-dnd-ghost {
+  height: var(--ag-dnd-ghost-height);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+ 
+  padding-inline: 12px;
+  border-radius: 6px;
+  box-sizing: border-box;
+ 
+  pointer-events: none;
+}
+ 
+.ag-header-cell-moving {
+  background-color: transparent;
+}
+
+.ag-header-cell-resize {
+  width: 14px !important;
+  right: -7px !important;
+  z-index: 10;
+  cursor: col-resize !important;
+}
+
+.ag-header-cell-resize::after {
+  content: "";
+  position: absolute;
+  top: 40%;
+  bottom: 20%;
+  left: 50%;
+  width: 2px;
+  background-color: var(--ag-secondary-border-color);
+  /* opacity: 0; */
+  /* transition: opacity 0.2s; */
+  transform: translateX(-50%);
+}
+
+.ag-header-cell-resize:hover::after,
+.ag-header-cell-resize:active::after {
+  opacity: 0.6;
+}
+
+/* Plant components: one-shot pulse when filtering by stat card type */
+@keyframes plant-component-type-highlight {
+  0%,
+  100% {
+    background-color: transparent;
+  }
+  40% {
+    background-color: color-mix(in srgb, theme("colors.brand.500") 24%, transparent);
+  }
+}
+
+.ag-theme-alpine .ag-row.plant-component-type-highlight .ag-cell,
+.ag-theme-alpine-dark .ag-row.plant-component-type-highlight .ag-cell {
+  animation: plant-component-type-highlight 2s ease-out 1;
+}
+
+@media (max-width: 1024px) {
+  .ag-header-cell-resize::after {
+    opacity: 0.3; 
+  }
+}
+ 
+ 

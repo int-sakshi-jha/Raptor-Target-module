@@ -1,0 +1,513 @@
+:root {
+  --hero-50: #fff;
+  --logo-50: #ffd0a0;
+}
+
+.home-layout {
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.home-layout__left {
+  flex: 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  padding: 2.5rem;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    width: 1px;
+  }
+}
+
+.home-layout__form-wrapper {
+  width: 100%;
+}
+
+.home-layout__right {
+  flex: 0 0 50%;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  .home-layout__grid {
+    background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.07) 1px,
+      transparent 1px
+    );
+    opacity: 1;
+  }
+}
+
+.home-layout__noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  background-size: 180px 180px;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  filter: blur(72px);
+  will-change: transform, opacity;
+  /* aspect-ratio: 1;
+    clip-path: shape(from 10.57% 49.17%, curve to 10.85% 35.01% with 11.22% 42.60%, curve to 15.82% 22.29% with 10.48% 27.42%, curve to 29.49% 18.80% with 21.15% 17.17%, curve to 42.59% 12.98% with 37.84% 20.43%, curve to 54.98% 5.09% with 47.35% 5.54%, curve to 66.52% 12.44% with 62.61% 4.63%, curve to 73.30% 25.42% with 70.43% 20.26%, curve to 85.19% 33.27% with 76.17% 30.59%, curve to 94.13% 43.49% with 94.22% 35.96%, curve to 91.26% 57.61% with 94.05% 51.02%, curve to 88.13% 72.53% with 88.46% 64.21%, curve to 80.50% 84.12% with 87.79% 80.84%, curve to 67.07% 92.57% with 73.21% 87.39%, curve to 53.10% 96.13% with 60.92% 97.76%, curve to 38.16% 92.56% with 45.27% 94.50%, curve to 26.29% 85.07% with 31.05% 90.62%, curve to 18.93% 73.37% with 21.54% 79.52%, curve to 13.12% 61.48% with 16.33% 67.23%, curve to 10.57% 49.17% with 9.92% 55.74%); */
+}
+
+.glow-orb--top {
+  width: 80%;
+  height: 700px;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--logo-50),
+    transparent 80%
+  );
+  animation: orbTopBottomDance 20s ease-in-out infinite;
+}
+
+.dark .glow-orb--top {
+  background: radial-gradient(
+    ellipse at center,
+    var(--hero-50),
+    transparent 80%
+  );
+}
+
+.glow-orb--right {
+  width: 200px;
+  height: 100%;
+  top: 50%;
+  right: -10%;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--logo-50),
+    transparent 80%
+  );
+  animation: orbRightPulse 7s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+
+.dark .glow-orb--right {
+  background: radial-gradient(
+    ellipse at center,
+    var(--hero-50),
+    transparent 80%
+  );
+}
+
+.glow-orb--bottom {
+  width: 80%;
+  height: 700px;
+  bottom: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    var(--logo-50),
+    transparent 80%
+  );
+  animation: orbTopBottomDance 20s ease-in-out infinite reverse;
+}
+
+.dark .glow-orb--bottom {
+  background: radial-gradient(
+    ellipse at center,
+    var(--hero-50),
+    transparent 80%
+  );
+}
+
+/* Top orb slides down to center, lingers, returns */
+@keyframes orbTopBottomDance {
+  0% {
+    opacity: 0.9;
+    filter: blur(72px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  45%,
+  55% {
+    opacity: 1;
+    filter: blur(55px);
+    background: radial-gradient(
+      ellipse at center,
+      var(--logo-50),
+      transparent 70%
+    );
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.9;
+    filter: blur(72px);
+  }
+}
+
+/* We drive the actual Y movement via a separate translate animation */
+.glow-orb--top {
+  animation:
+    orbTopMove 20s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    orbGlowPulse 7s ease-in-out infinite;
+}
+
+.glow-orb--bottom {
+  animation:
+    orbBottomMove 20s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    orbGlowPulse 7s ease-in-out infinite;
+}
+
+@keyframes orbTopMove {
+  0% {
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+
+  25% {
+    top: 20%;
+    opacity: 1;
+    filter: blur(58px);
+  }
+
+  50% {
+    top: 100%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  75% {
+    top: 20%;
+    opacity: 1;
+    filter: blur(58px);
+  }
+
+  100% {
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+}
+
+@keyframes orbBottomMove {
+  0% {
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+
+  25% {
+    bottom: 20%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  50% {
+    bottom: 100%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  75% {
+    bottom: 20%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  100% {
+    bottom: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+}
+
+@keyframes orbRightMove {
+  0% {
+    top: 50%;
+    right: 0%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+
+  25% {
+    right: 20%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  50% {
+    right: 50%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  75% {
+    right: 20%;
+    opacity: 1;
+    filter: blur(50px);
+  }
+
+  100% {
+    top: 50%;
+    right: 0%;
+    transform: translateX(-50%);
+    opacity: 0.85;
+    filter: blur(72px);
+  }
+}
+
+@keyframes orbGlowPulse {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+
+  48%,
+  52% {
+    opacity: 1;
+  }
+}
+
+@keyframes orbRightPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scaleX(1);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: translateY(-50%) scaleX(1.12);
+  }
+}
+
+/* =====================================================
+   LOGO
+   ===================================================== */
+.home-layout__logo-wrap {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes ringBreath {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.home-layout__logo {
+  object-fit: contain;
+  position: relative;
+  z-index: 1;
+  max-width: 90%;
+  /* Grayscale cycling animation */
+  animation: logoColorCycle 5s ease-in-out infinite;
+
+  /* Crisp rendering */
+  image-rendering: auto;
+}
+
+@keyframes logoColorCycle {
+  0% {
+    filter: grayscale(0%) brightness(1);
+  }
+
+  35% {
+    filter: grayscale(85%) brightness(0.92);
+  }
+
+  50% {
+    filter: grayscale(100%) brightness(0.88);
+  }
+
+  65% {
+    filter: grayscale(85%) brightness(0.92);
+  }
+
+  100% {
+    filter: grayscale(0%) brightness(1);
+  }
+}
+@media screen and (max-width: 374px) {
+  .home-layout__right .home-layout__logo {
+    max-width: 250px !important;
+  }}
+@media screen and (min-width: 375px) and (max-width: 767px) {
+  .home-layout__right .home-layout__logo {
+    max-width: 270px !important;
+  }
+  .home-layout__left {
+    /* max-height: 60% !important; */
+  }
+
+}
+@media (max-width: 768px) {
+  .home-layout {
+    flex-direction: column-reverse;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .home-layout__left {
+    flex: 0 0 auto;
+    padding: 2rem 1.25rem;
+    align-items: flex-end;
+    max-height: 470px;
+
+    &::after {
+      display: none;
+    }
+  }
+  .home-layout__right {
+    flex: auto;
+  }
+  .home-layout__right .home-layout__logo {
+    max-width: 500px;
+  }
+  .home-layout__form-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  .home-layout .home-layout__right .glow-orb--right {
+    width: 800px;
+    top: -140% !important;
+  }
+}
+@media screen and (max-width: 1024px){
+     .home-layout {
+    flex-direction: column-reverse;
+    justify-content: space-between;
+  }
+
+    .glow-orb--top {
+    width: 900px;
+    height: 80%;
+    top: 50%;
+    left: -50%;
+    transform: translateY(-50%);
+    animation:
+      orbTopMoveMobile 20s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+      orbGlowPulse 7s ease-in-out infinite;
+  }
+
+  @keyframes orbTopMoveMobile {
+    0%   { left: -50%; opacity: 0.85; filter: blur(72px); }
+    25%  { left: 20%;  opacity: 1;    filter: blur(58px); }
+    50%  { left: 100%; opacity: 1;    filter: blur(50px); }
+    75%  { left: 20%;  opacity: 1;    filter: blur(58px); }
+    100% { left: -50%; opacity: 0.85; filter: blur(72px); }
+  }
+
+  /* glow-orb--bottom: right to left */
+  .glow-orb--bottom {
+    width: 900px;
+    height: 80%;
+    bottom: auto;
+    top: 50%;
+    right: -50%;
+    left: auto;
+    transform: translateY(-50%);
+    animation:
+      orbBottomMoveMobile 20s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+      orbGlowPulse 7s ease-in-out infinite;
+  }
+
+  @keyframes orbBottomMoveMobile {
+    0%   { right: -50%; opacity: 0.85; filter: blur(72px); }
+    25%  { right: 20%;  opacity: 1;    filter: blur(58px); }
+    50%  { right: 100%; opacity: 1;    filter: blur(50px); }
+    75%  { right: 20%;  opacity: 1;    filter: blur(58px); }
+    100% { right: -50%; opacity: 0.85; filter: blur(72px); }
+  }
+
+  /* glow-orb--right: top to bottom */
+  .glow-orb--right {
+    /* display: none; */
+    width: 500px;
+    height: 90%;
+    top: -75% !important;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    animation:
+      orbRightMoveMobile 20s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+      orbGlowPulse 7s ease-in-out infinite;
+  }
+
+  @keyframes orbRightMoveMobile {
+    0%   { top: -50%; opacity: 0.85; filter: blur(72px); }
+    25%  { top: 20%;  opacity: 1;    filter: blur(58px); }
+    50%  { top: 100%; opacity: 1;    filter: blur(50px); }
+    75%  { top: 20%;  opacity: 1;    filter: blur(58px); }
+    100% { top: -50%; opacity: 0.85; filter: blur(72px); }
+  }
+}
+@media screen and (width: 1024px) {
+    .home-layout__logo-wrap {
+        padding-bottom: 6rem;
+    }
+    .home-layout__form-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .home-layout__left {
+    flex: 0 0 55%;
+    padding: 2rem 1.5rem;
+  }
+
+  .home-layout__right {
+    /* flex: 0 0 45%; */
+    flex: auto;
+  }
+  .home-layout__logo {
+    max-width: 430px;
+  }
+}

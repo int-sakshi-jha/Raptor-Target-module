@@ -1,0 +1,466 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useCallback, useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import Button from "@/components/common/Button";
+import Input from "@/components/common/Input";
+import AsyncSelect, { type Option } from "@/components/common/AsyncSelect";
+import SectionSubHeader from "@/components/common/SectionSubHeader";
+import FormModeToggle from "@/components/common/FormModeToggle";
+import FileUpload from "@/components/common/FileUpload";
+import { useParams } from "react-router-dom";
+import { useGetComponentTypeOptionsQuery } from "@/services/operations/componentAPI";
+import {
+    ASSET_STATUS_OPTIONS,
+    useUpdateAssetStatusMutation,
+    useCreateAssetMutation,
+    useUpdateAssetMutation,
+    useGetAssetTypeOptionsQuery,
+    useGetAssetDetailsQuery,
+    type CreateAssetInput,
+    type AssetRow,
+} from "@/services/operations/assetsAPI";
+import { Box, Calendar, FileText, Upload } from "lucide-react";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type AssetFormMode = "create" | "edit";
+
+type AssetFormValues = {
+    plant_id: string,
+    category_name: Option | null;
+    component_type: Option | null;
+    name: string;
+    model_number: string;
+    serial_number: string;
+    manufacturer_name: string;
+    specifications: Record<string, string>;
+    status: Option | null;
+    manufacture_date: string;
+    installation_date: string;
+    commissioning_date: string;
+    purchase_date: string;
+    warranty_start_date: string;
+    warranty_end_date: string;
+    description: string;
+    retired_at: string;
+    profile_url: string;
+    media_files: File[];
+};
+
+type AssetFormProps = {
+    mode?: AssetFormMode;
+    initialValues?: Partial<AssetRow>;
+    onSuccess?: () => void;
+    close?: () => void;
+    isOpen?: boolean;
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+const buildOption = (value: string | null | undefined): Option | null =>
+    value ? { value, label: value } : null;
+
+function buildEditFormValues(iv: Partial<AssetRow>): AssetFormValues {
+    const toSpecEntries = (
+        specs: Record<string, any> | null | undefined
+    ): Record<string, string> => {
+        if (!specs || typeof specs !== "object" || Array.isArray(specs)) {
+            return {};
+        }
+
+        return Object.fromEntries(
+            Object.entries(specs).map(([key, value]) => [
+                key,
+                String(value ?? ""),
+            ])
+        );
+    };
+
+    return {
+        plant_id: iv.plant_id ?? "",
+        category_name: buildOption(iv.category_name),
+        component_type: buildOption(iv.component_type),
+        name: iv.name ?? "",
+        model_number: iv.model_number ?? "",
+        serial_number: iv.serial_number ?? "",
+        manufacturer_name: iv.manufacturer_name ?? "",
+        specifications: toSpecEntries(iv.specifications),
+        status: buildOption(iv.status),
+        manufacture_date: iv.manufacture_date ? String(iv.manufacture_date).slice(0, 10) : "",
+        installation_date: iv.installation_date ? String(iv.installation_date).slice(0, 10) : "",
+        commissioning_date: iv.commissioning_date ? String(iv.commissioning_date).slice(0, 10) : "",
+        purchase_date: iv.purchase_date ? String(iv.purchase_date).slice(0, 10) : "",
+        warranty_start_date: iv.warranty_start_date ? String(iv.warranty_start_date).slice(0, 10) : "",
+        warranty_end_date: iv.warranty_end_date ? String(iv.warranty_end_date).slice(0, 10) : "",
+        description: iv.description ?? "",
+        retired_at: iv.retired_at ? String(iv.retired_at).slice(0, 10) : "",
+        profile_url: iv.profile_url ?? "",
+        media_files: [],
+    };
+}
+
+const DEFAULT_VALUES: AssetFormValues = {
+    plant_id: "",
+    category_name: null,
+    component_type: null,
+    name: "",
+    model_number: "",
+    serial_number: "",
+    manufacturer_name: "",
+    specifications: {},
+    status: null,
+    manufacture_date: "",
+    installation_date: "",
+    commissioning_date: "",
+    purchase_date: "",
+    warranty_start_date: "",
+    warranty_end_date: "",
+    description: "",
+    retired_at: "",
+    profile_url: "",
+    media_files: [],
+};
+
+// ── Specifications editor ─────────────────────────────────────────────────────
+
+const SpecificationsEditor: React.FC<{
+    specifications: Record<string, string>;
+    onChange: (v: Record<string, string>) => void;
+}> = ({ specifications, onChange }) => {
+
+    const add = () =>
+        onChange({
+            ...specifications,
+            "": "",
+        });
+
+    const remove = (key: string) => {
+        const updated = { ...specifications };
+        delete updated[key];
+        onChange(updated);
+    };
+
+    const update = (
+        oldKey: string,
+        field: "key" | "value",
+        val: string
+    ) => {
+        const updated = { ...specifications };
+
+        if (field === "key") {
+            updated[val] = updated[oldKey];
+            delete updated[oldKey];
+        } else {
+            updated[oldKey] = val;
+        }
+
+        onChange(updated);
+    };
+
+    return (
+        <div className="md:col-span-2 space-y-2">
+            <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-neutral-800 dark:text-neutral-dark-900">
+                    Specifications
+                </label>
+                <Button type="button" variant="outline" size="sm" onClick={add}>
+                    + Add
+                </Button>
+            </div>
+
+            {Object.keys(specifications).length === 0 && (
+                <p className="text-xs text-neutral-400 dark:text-neutral-500 py-1">
+                    No specifications yet — click "+ Add" to add a key-value pair.
+                </p>
+            )}
+
+            <div className="space-y-2">
+                {Object.entries(specifications).map(([key, value], i) => (
+                    <div key={i} className="flex items-center gap-2">
+                        <Input
+                            placeholder="Key"
+                            value={key}
+                            onChange={(e) =>
+                                update(key, "key", e.target.value)
+                            }
+                        />
+
+                        <Input
+                            placeholder="Value"
+                            value={value}
+                            onChange={(e) =>
+                                update(key, "value", e.target.value)
+                            }
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => remove(key)}
+                            className="shrink-0 text-error-500 hover:text-error-600 text-lg px-1"
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+const AssetForm: React.FC<AssetFormProps> = ({
+    mode = "create",
+    initialValues,
+    onSuccess,
+}) => {
+    const { id: plantId } = useParams<{ id: string }>();
+    const isEdit = mode === "edit";
+    const [showAdvanced, setShowAdvanced] = useState(isEdit);
+
+    const createMutation = useCreateAssetMutation();
+    const updateMutation = useUpdateAssetMutation();
+    const updateStatusMutation = useUpdateAssetStatusMutation();
+    const { data: assetDetailsResponse } = useGetAssetDetailsQuery(
+        isEdit ? initialValues?.id : null
+    );
+
+    const detailAsset =
+        assetDetailsResponse?.data?.data ??
+        assetDetailsResponse?.data ??
+        assetDetailsResponse?.asset;
+    const resolvedInitialValues = (detailAsset ?? initialValues) as Partial<AssetRow> | undefined;
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        reset,
+        control,
+        formState: { errors },
+    } = useForm<AssetFormValues>({
+        defaultValues:
+            isEdit && resolvedInitialValues
+                ? buildEditFormValues(resolvedInitialValues)
+                : DEFAULT_VALUES,
+    });
+
+    // ── Options ────────────────────────────────────────────────────────────────
+
+
+    const { data: assetTypes } = useGetAssetTypeOptionsQuery();
+
+    const loadAssetTypeOptions = useCallback(
+        async (): Promise<Option[]> => {
+            console.log(data)
+            return assetTypes ?? [];
+        },
+        [assetTypes]
+    );
+
+    const { data } = useGetComponentTypeOptionsQuery();
+
+    const loadComponentTypeOptions = useCallback(
+        async (): Promise<Option[]> => {
+            console.log(data)
+            return data ?? [];
+        },
+        [data]
+    );
+
+    const loadStatusOptions = useCallback(
+        async () => ASSET_STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
+        []
+    );
+
+    useEffect(() => {
+        reset(isEdit && resolvedInitialValues ? buildEditFormValues(resolvedInitialValues) : DEFAULT_VALUES);
+        setShowAdvanced(isEdit);
+    }, [resolvedInitialValues, isEdit, reset]);
+
+    const isSubmitting =
+        createMutation.isPending ||
+        updateMutation.isPending ||
+        updateStatusMutation.isPending;
+
+    // ── Submit (STATIC ONLY) ───────────────────────────────────────────────────
+    const onSubmit = async (data: AssetFormValues) => {
+        const finalData: CreateAssetInput = {
+            plant_id: plantId ?? "",
+            category_name: data.category_name?.value ?? "",
+            component_type: data.component_type?.value ?? "",
+            name: data.name.trim(),
+            model_number: data.model_number.trim(),
+            serial_number: data.serial_number.trim(),
+            manufacturer_name: data.manufacturer_name.trim(),
+            specifications: data.specifications,
+            status: data.status?.value ?? "",
+            manufacture_date: data.manufacture_date || "",
+            installation_date: data.installation_date || "",
+            commissioning_date: data.commissioning_date || "",
+            purchase_date: data.purchase_date || "",
+            warranty_start_date: data.warranty_start_date || "",
+            warranty_end_date: data.warranty_end_date || "",
+            description: data.description.trim(),
+            retired_at: data.retired_at || null,
+            profile_url: data.profile_url || "",
+            media_files: data.media_files,
+        };
+
+        if (isEdit && initialValues?.id) {
+            const assetId = initialValues.id;
+            await updateMutation.mutateAsync({ id: assetId, ...finalData });
+            await updateStatusMutation.mutateAsync({ id: assetId, status: finalData.status });
+        } else {
+            await createMutation.mutateAsync(finalData);
+        }
+        reset();
+        onSuccess?.();
+    };
+
+    const watchedMediaFiles = watch("media_files");
+
+    return (
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex h-full flex-col gap-2"
+            noValidate
+        >
+            <FormModeToggle
+                showAdvanced={showAdvanced}
+                onToggle={() => setShowAdvanced((prev) => !prev)}
+                className="!absolute right-14 top-5 z-10"
+            />
+
+            <div className="space-y-2">
+                {/* Basic Info */}
+                <div className="space-y-2">
+                    <SectionSubHeader icon={Box} title="Basic Information" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <Controller
+                            name="category_name"
+                            control={control}
+                            rules={{ required: "Category is required" }}
+                            render={({ field }) => (
+                                <AsyncSelect
+                                    label="Category"
+                                    star
+                                    apiSearch
+                                    loadOptions={loadAssetTypeOptions}
+                                    value={field.value}
+                                    onChange={(v) => field.onChange(v ?? null)}
+                                    errors={errors.category_name}
+                                    isClearable
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="component_type"
+                            control={control}
+                            rules={{ required: "Component type is required" }}
+                            render={({ field }) => (
+                                <AsyncSelect
+                                    label="Component Type"
+                                    star
+                                    apiSearch
+                                    loadOptions={loadComponentTypeOptions}
+                                    value={field.value}
+                                    onChange={(v) => field.onChange(v ?? null)}
+                                    errors={errors.component_type}
+                                    isClearable
+                                />
+                            )}
+                        />
+
+                        <Input
+                            label="Asset Name"
+                            {...register("name", { required: "Required" })}
+                            errors={errors.name}
+                        />
+
+                        <Controller
+                            name="status"
+                            control={control}
+                            render={({ field }) => (
+                                <AsyncSelect
+                                    label="Status"
+                                    loadOptions={loadStatusOptions}
+                                    value={field.value}
+                                    onChange={(v) => field.onChange(v ?? null)}
+                                    isClearable
+                                />
+                            )}
+                        />
+
+                        <Input label="Model Number" {...register("model_number")} />
+                        <Input label="Serial Number" {...register("serial_number")} />
+                        <Input label="Manufacturer" {...register("manufacturer_name")} />
+
+                        <SpecificationsEditor
+                            specifications={watch("specifications") || {}}
+                            onChange={(v) => setValue("specifications", v)}
+                        />
+                    </div>
+                </div>
+
+                {/* Dates */}
+                <div className="space-y-2">
+                    <SectionSubHeader icon={Calendar} title="Dates" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <Input type="date" label="Manufacture Date" {...register("manufacture_date")} />
+                        <Input type="date" label="Purchase Date" {...register("purchase_date")} />
+                        <Input type="date" label="Installation Date" {...register("installation_date")} />
+                        <Input type="date" label="Commissioning Date" {...register("commissioning_date")} />
+                        <Input type="date" label="Warranty Start Date" {...register("warranty_start_date")} />
+                        <Input type="date" label="Warranty End Date" {...register("warranty_end_date")} />
+                    </div>
+                </div>
+
+                {showAdvanced && (
+                    <>
+                        <div className="space-y-2">
+                            <SectionSubHeader icon={FileText} title="Description" />
+                            <textarea
+                                {...register("description")}
+                                rows={3}
+                                className="input resize-none"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <SectionSubHeader icon={Upload} title="Media" />
+                            <FileUpload
+                                multiple
+                                value={watchedMediaFiles}
+                                onChange={(files) =>
+                                    setValue("media_files", files, { shouldDirty: true })
+                                }
+                            />
+                        </div>
+                    </>
+                )}
+            </div>
+
+            <div className="flex justify-between z-20 mt-auto border-t border-neutral-200 bg-white/95 px-1 py-3 backdrop-blur-sm dark:border-neutral-700 dark:bg-neutral-dark-200/95">
+                <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                    onClick={() =>
+                        reset(isEdit && resolvedInitialValues ? buildEditFormValues(resolvedInitialValues) : DEFAULT_VALUES)
+                    }
+                >
+                    Reset
+                </Button>
+
+                <Button type="submit" disabled={isSubmitting} loading={isSubmitting}>
+                    {isEdit ? "Update Asset" : "Create Asset"}
+                </Button>
+            </div>
+        </form>
+    );
+};
+
+export default AssetForm;
