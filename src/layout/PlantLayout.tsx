@@ -23,7 +23,8 @@ import {
   RotateCcw,
   X,
   Spline,
-  Package
+  Package,
+  Target
 } from "lucide-react";
 import AsyncSelect, { type Option } from "@/components/common/AsyncSelect";
 import {
@@ -107,6 +108,13 @@ const TAB_ITEMS: {
       path: "assets",
       label: "Assets",
       icon: Package,
+    },
+
+    {
+      key: "target",
+      path: "target",
+      label: "Target",
+      icon: Target,
     },
   ];
 

@@ -208,6 +208,17 @@ export const ticketEndpoints={
   GET_TICKET_STATISTICS:""
 }
 
+export const targetEndpoints={
+  CREATE_TARGET:"/target",
+  GET_TARGET_BY_ID:(id:String)=>`/target/${id}`,
+  GET_ALL_TARGETS:"/targets",
+  GET_MY_TARGETS:(id:String)=>`/target/${id}`,
+  UPDATE_TARGET:(id:String)=>`/target/${id}`,
+  UPDATE_STATUS:"",
+  DELETE_TARGET:`/targets`,
+
+}
+
 export const componentEndpoints = {
   GET_ALL: "/components",
   GET_MY_LIST: "/components/me",

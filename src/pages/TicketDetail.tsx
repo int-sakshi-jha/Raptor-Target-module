@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     useGetTicketByIdQuery,
     useDeleteTicketMutation,
-} from "@/services/operations/TicketAPI.ts";
+} from "@/services/operations/ticketAPI";
 import Badge, { type BadgeVariant } from "@/components/common/ColorBadge";
 import { useDetailBreadcrumb } from "@/context/BreadcrumbContext";
 import TicketForm from "@/components/core/form/TicketForm.tsx";
@@ -222,7 +222,7 @@ const TicketDetails: React.FC = () => {
             <div className="flex flex-1 min-h-0 overflow-hidden">
 
                 {/* ── left:  cards (independently scrollable) ── */}
-                <DetailMain className="w-2/3 ticket-detail-scrollbar-hide flex-1 min-h-0 overflow-y-auto">
+                <DetailMain className="w-2/5 ticket-detail-scrollbar-hide flex-1 min-h-0 overflow-y-auto">
                     <DetailSectionsGrid maxColumns={2}>
 
                         {/* OVERVIEW */}
@@ -421,7 +421,7 @@ const TicketDetails: React.FC = () => {
                  *     <div className="shrink-0 ...">Composer input</div>
                  *   </div>
                  */}
-                <div className="ticket-detail-comments-scope hidden w-1/3 shrink-0 border-l border-neutral-200 dark:border-neutral-dark-200 md:flex md:flex-col h-full min-h-0 overflow-hidden">
+                <div className="ticket-detail-comments-scope hidden w-3/5 shrink-0 border-l border-neutral-200 dark:border-neutral-dark-200 md:flex md:flex-col h-full min-h-0 overflow-hidden">
                     <TicketCommentsPanel
                         comments={commentsHook.comments}
                         total={commentsHook.total}

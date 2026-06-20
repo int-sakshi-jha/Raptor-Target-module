@@ -7,6 +7,7 @@ import AsyncSelect, { type Option } from "@/components/common/AsyncSelect";
 import SectionSubHeader from "@/components/common/SectionSubHeader";
 import FormModeToggle from "@/components/common/FormModeToggle";
 import FileUpload from "@/components/common/FileUpload";
+import { TagMapBuilder } from "@/components/common/JsonFields";
 import { useParams } from "react-router-dom";
 import { useGetComponentTypeOptionsQuery } from "@/services/operations/componentAPI";
 import {
@@ -19,7 +20,7 @@ import {
     type CreateAssetInput,
     type AssetRow,
 } from "@/services/operations/assetsAPI";
-import { Box, Calendar, FileText, Upload } from "lucide-react";
+import { Box, Calendar, FileText, Settings, Upload } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -121,92 +122,6 @@ const DEFAULT_VALUES: AssetFormValues = {
     media_files: [],
 };
 
-// ── Specifications editor ─────────────────────────────────────────────────────
-
-const SpecificationsEditor: React.FC<{
-    specifications: Record<string, string>;
-    onChange: (v: Record<string, string>) => void;
-}> = ({ specifications, onChange }) => {
-
-    const add = () =>
-        onChange({
-            ...specifications,
-            "": "",
-        });
-
-    const remove = (key: string) => {
-        const updated = { ...specifications };
-        delete updated[key];
-        onChange(updated);
-    };
-
-    const update = (
-        oldKey: string,
-        field: "key" | "value",
-        val: string
-    ) => {
-        const updated = { ...specifications };
-
-        if (field === "key") {
-            updated[val] = updated[oldKey];
-            delete updated[oldKey];
-        } else {
-            updated[oldKey] = val;
-        }
-
-        onChange(updated);
-    };
-
-    return (
-        <div className="md:col-span-2 space-y-2">
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-neutral-800 dark:text-neutral-dark-900">
-                    Specifications
-                </label>
-                <Button type="button" variant="outline" size="sm" onClick={add}>
-                    + Add
-                </Button>
-            </div>
-
-            {Object.keys(specifications).length === 0 && (
-                <p className="text-xs text-neutral-400 dark:text-neutral-500 py-1">
-                    No specifications yet — click "+ Add" to add a key-value pair.
-                </p>
-            )}
-
-            <div className="space-y-2">
-                {Object.entries(specifications).map(([key, value], i) => (
-                    <div key={i} className="flex items-center gap-2">
-                        <Input
-                            placeholder="Key"
-                            value={key}
-                            onChange={(e) =>
-                                update(key, "key", e.target.value)
-                            }
-                        />
-
-                        <Input
-                            placeholder="Value"
-                            value={value}
-                            onChange={(e) =>
-                                update(key, "value", e.target.value)
-                            }
-                        />
-
-                        <button
-                            type="button"
-                            onClick={() => remove(key)}
-                            className="shrink-0 text-error-500 hover:text-error-600 text-lg px-1"
-                        >
-                            ×
-                        </button>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const AssetForm: React.FC<AssetFormProps> = ({
@@ -253,7 +168,6 @@ const AssetForm: React.FC<AssetFormProps> = ({
 
     const loadAssetTypeOptions = useCallback(
         async (): Promise<Option[]> => {
-            console.log(data)
             return assetTypes ?? [];
         },
         [assetTypes]
@@ -273,6 +187,19 @@ const AssetForm: React.FC<AssetFormProps> = ({
         async () => ASSET_STATUS_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
         []
     );
+
+    const toSpecificationRecord = (value: unknown): Record<string, string> => {
+        if (!value || typeof value !== "object" || Array.isArray(value)) {
+            return {};
+        }
+
+        return Object.fromEntries(
+            Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+                key,
+                String(entry ?? ""),
+            ]),
+        );
+    };
 
     useEffect(() => {
         reset(isEdit && resolvedInitialValues ? buildEditFormValues(resolvedInitialValues) : DEFAULT_VALUES);
@@ -397,11 +324,28 @@ const AssetForm: React.FC<AssetFormProps> = ({
                         <Input label="Model Number" {...register("model_number")} />
                         <Input label="Serial Number" {...register("serial_number")} />
                         <Input label="Manufacturer" {...register("manufacturer_name")} />
+                        <div className="space-y-2 md:col-span-2">
+                            <SectionSubHeader icon={Settings} title="Specifications" />
+                            <div className="rounded-xs border border-neutral-100 dark:border-neutral-700/60 bg-neutral-50 dark:bg-neutral-dark-100 p-3">
+                                
+                                    <TagMapBuilder
+                                        key={`asset-specifications-${isEdit ? "edit" : "create"}`}
+                                        initialConfig={watch("specifications") || {}}
+                                        onChange={(value) =>
+                                            setValue("specifications", toSpecificationRecord(value), {
+                                                shouldDirty: true,
+                                            })
+                                        }
+                                        previewLabel="specifications"
+                                    />
 
-                        <SpecificationsEditor
-                            specifications={watch("specifications") || {}}
-                            onChange={(v) => setValue("specifications", v)}
-                        />
+                                
+
+                            </div>
+                        </div>
+                        <div className="md:col-span-2">
+
+                        </div>
                     </div>
                 </div>
 

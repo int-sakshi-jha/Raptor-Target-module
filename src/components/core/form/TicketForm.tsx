@@ -10,14 +10,14 @@ import {
     TICKET_PRIORITY_OPTIONS,
     type TicketRow,
     type CreateTicketInput
-} from "@/services/operations/TicketAPI.ts";
+} from "@/services/operations/ticketAPI";
 import { useGetPlantNamesQuery } from "@/services/operations/plantAPI";
 import { useGetComponentTypeOptionsQuery, useGetAllComponentQuery } from "@/services/operations/componentAPI";
 import FileUpload from "@/components/common/FileUpload";
 import { useGetAllUsersQuery } from "@/services/operations/userAPI";//
 import { Ticket, User, Building2, Calendar, FileText, Upload } from "lucide-react";
 import FormModeToggle from "@/components/common/FormModeToggle";
-import { useCreateTicketMutation,useUpdateTicketMutation } from "@/services/operations/TicketAPI.ts";
+import { useCreateTicketMutation,useUpdateTicketMutation } from "@/services/operations/ticketAPI";
 import { applyBackendErrors } from "@/utils/formValidators";
 
 // ── Types ─────────────────────────────────────────────────────────────────────

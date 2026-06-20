@@ -192,7 +192,11 @@ export const fetchTagMapKeyOptions = async (
       { params },
     );
 
-    return (data?.data ?? []).map((key) => ({ value: key, label: key }));
+
+    return ((data?.data?.data ?? data?.data) ?? []).map((key) => ({
+      value: key,
+      label: key,
+    }));
   } catch {
     return [];
   }

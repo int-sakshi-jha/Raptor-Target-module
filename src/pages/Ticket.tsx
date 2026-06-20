@@ -19,7 +19,7 @@ import { useResponsiveDataView } from "@/components/core/table/UseResponsiveData
 import { Table as TableIcon, LayoutGrid, Ticket } from "lucide-react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/services/api";
-import { useGetAllTicketsQuery } from "@/services/operations/TicketAPI.ts";
+import { useGetAllTicketsQuery } from "@/services/operations/ticketAPI";
 import { useGetAllUsersQuery } from "@/services/operations/userAPI"
 import {
     TICKET_STATUS_OPTIONS,
@@ -29,7 +29,7 @@ import {
     type TicketRow,
     type TicketListFilters,
     type Option
-} from "@/services/operations/TicketAPI.ts";
+} from "@/services/operations/ticketAPI";
 import TicketCard from "@/components/core/customcards/TicketCard.tsx";
 import Modal from "@/components/common/Modal";
 import TicketForm from "@/components/core/form/TicketForm";

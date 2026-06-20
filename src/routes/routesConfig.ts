@@ -62,6 +62,8 @@ import PlantFeatures from "@/pages/PlantFeatures";
 import PlantFeatureDetails from "@/pages/PlantFeatureDetails";
 import TagGroups from "@/pages/TagGroups";
 import TagGroupDetails from "@/pages/TagGroupDetails";
+import Target from "@/pages/Target";
+import TargetDetails from "@/pages/TargetDetail";
 
 export interface RouteConfig {
   path: string;
@@ -288,6 +290,19 @@ export const routesConfig: RouteConfig[] = [
           {
             path: "asset/:id",
             element: AssetDetails,
+            isPublic: false,
+            permissionsRequired: ["view-plant-detail"],
+          },
+
+          {
+            path: "target",
+            element: Target,
+            isPublic: false,
+            permissionsRequired: ["view-plant-detail"],
+          },
+          {
+            path: "target/:id",
+            element: TargetDetails,
             isPublic: false,
             permissionsRequired: ["view-plant-detail"],
           },
