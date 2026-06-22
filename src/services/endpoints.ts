@@ -208,6 +208,12 @@ export const ticketEndpoints={
   GET_TICKET_STATISTICS:""
 }
 
+export const commentsEndpoints = {
+    CREATE_COMMENT: `/comment`,
+    GET_COMMENTS_BY_TICKET_ID: (ticketId: string | number) => `/comments/${ticketId}`,
+    UPDATE_COMMENT: (commentId: string | number) => `/comment/${commentId}`,
+} as const;
+
 export const targetEndpoints={
   CREATE_TARGET:"/target",
   GET_TARGET_BY_ID:(id:String)=>`/target/${id}`,

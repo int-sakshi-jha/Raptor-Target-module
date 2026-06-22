@@ -1,22 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { api } from "../api";
-//import axios from "axios";
+//import { api } from "../api";
+import axios from "axios";
 import { ticketEndpoints } from "../endpoints";
 import { toastError } from "@/utils/errorFormatter";
 import { cleanQueryFilters, toURLSearchParams, cleanEmptyStrings } from "@/utils/requestQuery";
 
 //http://localhost:5000
 // ─── Interfaces ───────────────────────────────────────────────────────────────
-// const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVkZjY5LWFhN2MtNzEwZC05ZTgxLTkwY2RkMjU5YmY0YyIsImlhdCI6MTc4MTg2NDcwNCwiZXhwIjoyNjQ1ODY0NzA0fQ.i-5lbhLfHh3IUtIs1DzGNN4EVYwOFjKml9-2YhuSguA";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVlZWFkLTc3NTQtNzM1ZS1hMzM2LTdmMDE3YmMwZGUwNCIsImlhdCI6MTc4MjEyMDgwNiwiZXhwIjoyNjQ2MTIwODA2fQ.fRsqdKW_m8tb-CzndfT7-2reiGh4J1Cu5s9mOy813Lo";
 
-// const api = axios.create({
-//   baseURL: "http://localhost:5000/api/v1",
-//   headers: {
-//     Authorization: `Bearer ${TOKEN}`,
-//     "Content-Type": "application/json",
-//   },
-// }); 
+const api = axios.create({
+  baseURL: "http://192.168.2.118:5000/api/v1",
+  headers: {
+    Authorization: `Bearer ${TOKEN}`,
+    "Content-Type": "application/json",
+  },
+}); 
 
 export interface TicketListFilters {
   status?: string;

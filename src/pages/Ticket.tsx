@@ -85,10 +85,10 @@ function toTicketApiFilters(filters: FilterValues): TicketListFilters {
     setScalarFilterParam(base, filters, "priority");
     setScalarFilterParam(base, filters, "created_at_from");
     setScalarFilterParam(base, filters, "created_at_to");
-    setScalarFilterParam(base, filters, "resolved_at_from");
-    setScalarFilterParam(base, filters, "resolved_at_to");
-    setScalarFilterParam(base, filters, "updated_at_from");
-    setScalarFilterParam(base, filters, "updated_at_to");
+    setScalarFilterParam(base, filters, "resolved_from");
+    setScalarFilterParam(base, filters, "resolved_to");
+    setScalarFilterParam(base, filters, "updated_from");
+    setScalarFilterParam(base, filters, "updated_to");
     setScalarFilterParam(base, filters, "created_by");
     setScalarFilterParam(base, filters, "updated_by");
 
@@ -179,6 +179,8 @@ const PlantTickets: React.FC = () => {
 
     });
 
+    console.log(ticketResponse)
+
     const { data: userOptionsData } = useGetAllUsersQuery({});
     const userOptions =
         (userOptionsData?.data?.users ?? []).map(
@@ -212,7 +214,7 @@ const PlantTickets: React.FC = () => {
     // ── Derived data ──────────────────────────────────────────────────────────
     const tableData = useMemo(() => ticketResponse?.data?.tickets ?? [], [ticketResponse?.data]);
     const pagination = useMemo(() => ticketResponse?.pagination, [ticketResponse?.pagination]);
-
+    console.log("tableData",tableData)
     // ─── Column definitions ───────────────────────────────────────────────────
 
     const ticketColumns: CommonColumnConfig[] = useMemo(
@@ -272,22 +274,22 @@ const PlantTickets: React.FC = () => {
     buildDateRangeFilterField({
         key: "created_at",
         label: "Created At",
-        startKey: "created_at_from",
-        endKey: "created_at_to",
+        startKey: "created_from",
+        endKey: "created_to",
     }),
 
     buildDateRangeFilterField({
         key: "resolved_at",
         label: "Resolved At",
-        startKey: "resolved_at_from",
-        endKey: "resolved_at_to",
+        startKey: "resolved_from",
+        endKey: "resolved_to",
     }),
 
     buildDateRangeFilterField({
         key: "updated_at",
         label: "Updated At",
-        startKey: "updated_at_from",
-        endKey: "updated_at_to",
+        startKey: "updated_from",
+        endKey: "updated_to",
     }),
 
     buildSelectFilter(

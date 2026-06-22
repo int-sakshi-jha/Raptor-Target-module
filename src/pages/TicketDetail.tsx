@@ -90,6 +90,7 @@ const TicketDetails: React.FC = () => {
         ticketResponseData?.data ??
         ticketResponseData ??
         null;
+        console.log("ticket",ticket)
 
     useDetailBreadcrumb(ticket?.title);
 
@@ -423,6 +424,7 @@ const TicketDetails: React.FC = () => {
                  */}
                 <div className="ticket-detail-comments-scope hidden w-3/5 shrink-0 border-l border-neutral-200 dark:border-neutral-dark-200 md:flex md:flex-col h-full min-h-0 overflow-hidden">
                     <TicketCommentsPanel
+                        ticket={ticket}
                         comments={commentsHook.comments}
                         total={commentsHook.total}
                         isInitialLoading={commentsHook.isInitialLoading}
@@ -439,6 +441,7 @@ const TicketDetails: React.FC = () => {
             {/* ── mobile: comments below accordions ── */}
             <div className="border-t border-neutral-200 dark:border-neutral-dark-200 md:hidden">
                 <TicketCommentsPanel
+                    ticket={ticket}
                     comments={commentsHook.comments}
                     total={commentsHook.total}
                     isInitialLoading={commentsHook.isInitialLoading}
@@ -475,7 +478,7 @@ const TicketDetails: React.FC = () => {
                 open={confirmOpen}
                 onClose={() => {
                     if (deleteMutation.isPending) return;
-                    setConfirmOpen(false);
+                    setConfirmActivityFeedmOpen(false);
                 }}
                 onConfirm={handleDelete}
                 title="Delete Ticket"

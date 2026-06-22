@@ -73,11 +73,11 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "http://192.168.2.68:5000",
+        target: "http://192.168.2.87:5000",
         changeOrigin: true,
         secure: false,
         cookieDomainRewrite: {
-          "192.168.2.68": "localhost",
+          "192.168.2.87": "localhost",
         },
         cookiePathRewrite: {
           "/": "/",
