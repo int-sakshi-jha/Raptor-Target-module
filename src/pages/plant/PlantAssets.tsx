@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
   type CommonColumnConfig,
@@ -10,6 +10,7 @@ import CommonToolbar, {
   buildColumnsAction,
   buildFiltersAction,
   buildImportAction,
+  buildScanAction,
 } from "@/components/core/table/CommonToolbar";
 import {
   default as CommonFilterPanel,
@@ -18,13 +19,13 @@ import {
 } from "@/components/core/table/CommonFilterPanel";
 import CommonDataView from "@/components/core/table/CommonDataView";
 import { useResponsiveDataView } from "@/components/core/table/UseResponsiveDataView";
-import { Table as TableIcon, Factory, LayoutGrid, Cpu, Download } from "lucide-react";
+import { Table as TableIcon, Factory, LayoutGrid, Cpu, Download, Camera } from "lucide-react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/services/api";
 import { useAppSelector } from "@/store/hooks";
 import {
   useGetAllAssetsQuery, useDeleteAssetMutation, useImportAssetsMutation,
-  useExportAssetsMutation, type Option
+  useExportAssetsMutation
 } from "@/services/operations/assetsAPI";
 import { useGetComponentTypeOptionsQuery } from "@/services/operations/componentAPI";
 import {
@@ -34,7 +35,6 @@ import {
   type AssetRow,
   type AssetListFilters,
 } from "@/services/operations/assetsAPI";
-import AssetCard from "@/components/core/customcards/AssetCard";
 import Modal from "@/components/common/Modal";
 import AssetForm from "@/components/core/form/AssetForm";
 import ConfirmationDialog from "@/components/common/ConfirmationDialog";
@@ -55,9 +55,10 @@ import {
   createCrudRowActionsCellRenderer,
 } from "@/components/core/table/TableRenderers";
 import { StatusBadge } from "./PlantAssetDetails";
-import {PERMISSIONS,hasPermission,} from "@/utils/permissions";
-import { KanbanSquare } from "lucide-react";
+import { PERMISSIONS, hasPermission, } from "@/utils/permissions";
+
 import AssetReplacementForm from "@/components/core/form/AssetReplacementForm";
+import AssetScanForm from "@/components/core/form/AssetScanForm";
 
 // ─── Entity key ───────────────────────────────────────────────────────────────
 
@@ -143,7 +144,7 @@ const assetRowActionsCellRenderer =
 const PlantAssets: React.FC = () => {
   const { id: plantId } = useParams<{ id: string }>();
 
-  const {permissions: userPermissions} = useAppSelector((state) => state.auth);
+  const { permissions: userPermissions } = useAppSelector((state) => state.auth);
 
   // ── Local state ───────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
@@ -153,6 +154,7 @@ const PlantAssets: React.FC = () => {
   const [filters, setFilters] = useState<FilterValues>(() => ({ ...ASSET_FILTER_DEFAULTS }));
   const [showCreate, setShowCreate] = useState(false);
   const [showReplace, setShowReplace] = useState(false)
+  const [showScan, setShowScan] = useState(false);
   const [assetToReplaceId, setAssetToReplaceId] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useResponsiveDataView();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -348,13 +350,13 @@ const PlantAssets: React.FC = () => {
       buildSelectFilter("status", "Status", ASSET_STATUS_OPTIONS),
       buildSelectFilter("category_name", "Category", loadAssetTypeOptions),
       buildSelectFilter("component_type", "Component Type", componentTypeOptions),
-      buildDateRangeFilterField({key: "installation_date",label: "Installation Date",startKey:"installation_date_start",endKey: "installation_date_end",}),
-      buildDateRangeFilterField({key: "commissioning_date",label: "Commissioning Date",startKey:"commissioning_date_start",endKey: "commissioning_date_end",}),
-      buildDateRangeFilterField({key: "purchase_date",label: "Purchase Date",startKey:"purchase_date_start",endKey: "purchase_date_end",}),
-      buildDateRangeFilterField({key: "warranty_start_date",label: "Warranty Start Date",startKey:"warranty_start_date_start",endKey: "warranty_start_date_end",}),
-      buildDateRangeFilterField({key: "warranty_end_date",label: "Warranty End Date",startKey:"warranty_end_date_start",endKey: "warranty_end_date_end",}),
-      buildDateRangeFilterField({key: "created_at",label: "Created At",startKey:"created_at_start",endKey: "created_at_end",}),
-      buildDateRangeFilterField({key: "updated_at",label: "Updated At",startKey:"updated_at_start",endKey: "updated_at_end",}),
+      buildDateRangeFilterField({ key: "installation_date", label: "Installation Date", startKey: "installation_date_start", endKey: "installation_date_end", }),
+      buildDateRangeFilterField({ key: "commissioning_date", label: "Commissioning Date", startKey: "commissioning_date_start", endKey: "commissioning_date_end", }),
+      buildDateRangeFilterField({ key: "purchase_date", label: "Purchase Date", startKey: "purchase_date_start", endKey: "purchase_date_end", }),
+      buildDateRangeFilterField({ key: "warranty_start_date", label: "Warranty Start Date", startKey: "warranty_start_date_start", endKey: "warranty_start_date_end", }),
+      buildDateRangeFilterField({ key: "warranty_end_date", label: "Warranty End Date", startKey: "warranty_end_date_start", endKey: "warranty_end_date_end", }),
+      buildDateRangeFilterField({ key: "created_at", label: "Created At", startKey: "created_at_start", endKey: "created_at_end", }),
+      buildDateRangeFilterField({ key: "updated_at", label: "Updated At", startKey: "updated_at_start", endKey: "updated_at_end", }),
     ];
   }, [componentTypeOptions]);
 
@@ -370,6 +372,7 @@ const PlantAssets: React.FC = () => {
 
   const toolbarActions = [
     buildAddAction(() => setShowCreate(true), hasPermission(userPermissions, PERMISSIONS.ASSET.CREATE)),
+    buildScanAction(() => setShowScan(true)),
     buildDeleteAction(async () => {
       if (selectedIds.length === 0) return;
       setConfirmTitle("Delete Assets");
@@ -391,12 +394,12 @@ const PlantAssets: React.FC = () => {
       icon: <Download className="w-4 h-4" />,
       onClick: () => exportMutation.mutate(plantId ?? ""),
       variant: "outline" as const,
-      show: hasPermission(userPermissions,PERMISSIONS.ASSET.EXPORT)
+      show: hasPermission(userPermissions, PERMISSIONS.ASSET.EXPORT)
     },
     {
       ...buildImportAction({ onImport: (file: File) => importMutation.mutate({ file, plantId: plantId ?? "" }) }),
       onClick: () => importFileRef.current?.click(),
-      show: hasPermission(userPermissions,PERMISSIONS.ASSET.IMPORT)
+      show: hasPermission(userPermissions, PERMISSIONS.ASSET.IMPORT)
     },
   ];
 
@@ -455,7 +458,7 @@ const PlantAssets: React.FC = () => {
                 setPage(1);
               }}
               filterPanelRef={filterPanelRef}
-              // customCardComponent={AssetCard}
+            // customCardComponent={AssetCard}
             />
           </div>
 
@@ -527,6 +530,23 @@ const PlantAssets: React.FC = () => {
             setShowReplace(false);
             setShowCreate(true);
           }}
+        />
+      </Modal>
+
+      <Modal
+        open={showScan}
+        onClose={() => setShowScan(false)}
+        title="Scan Asset"
+        subtitle="Upload or capture an asset photo"
+        icon={Camera}
+        maxWidth="max-w-3xl"
+        centerModal
+      >
+        <AssetScanForm
+          key={showScan ? "open" : "closed"}
+          plantId={plantId as string}
+          onSuccess={() => setShowScan(false)}
+          close={() => setShowScan(false)}
         />
       </Modal>
 

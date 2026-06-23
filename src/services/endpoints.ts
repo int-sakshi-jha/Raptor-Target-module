@@ -192,7 +192,8 @@ export const assetEndpoints={
   BULK_DELETE:"/assets/delete",
   IMPORT_ASSETS:"/assets/import",
   EXPORT_ASSETS:"/assets/export",
-  GET_ASSET_TYPES:"/asset-types"
+  GET_ASSET_TYPES:"/asset-types",
+  UPLOAD_ASSET_IMAGE:"/assets/scan"
 }as const;
 
 export const ticketEndpoints={

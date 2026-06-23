@@ -6,7 +6,7 @@ import { toastError } from "@/utils/errorFormatter";
 import { commentsEndpoints } from "../endpoints";
 
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVlZWFkLTc3NTQtNzM1ZS1hMzM2LTdmMDE3YmMwZGUwNCIsImlhdCI6MTc4MjEyMDgwNiwiZXhwIjoyNjQ2MTIwODA2fQ.fRsqdKW_m8tb-CzndfT7-2reiGh4J1Cu5s9mOy813Lo";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmMzRmLTJiNzUtNzA5Yy05NjMyLTVmNjI3MTZmODUyOSIsImlhdCI6MTc4MjE5ODUxMiwiZXhwIjoyNjQ2MTk4NTEyfQ.wKtm0s617-hQvYHdFPAQ-wk7RNlVnpA58Ptu1FrDavs";
 
 const api = axios.create({
   baseURL: "http://192.168.2.118:5000/api/v1",
@@ -160,7 +160,7 @@ export const useUpdateCommentMutation = () => {
                 );
                 return (data?.data ?? data) as TicketComment;
             }
-            const { data } = await api.put(
+            const { data } = await api.patch(
                 commentsEndpoints.UPDATE_COMMENT(comment_id),
                 { content },
             );

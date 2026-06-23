@@ -52,15 +52,55 @@ const AVATAR_PALETTE = [
     "bg-amber-100 text-amber-700 dark:bg-amber-800/40 dark:text-amber-300",
 ];
 
-function avatarColor(name: string): string {
+function avatarColor(name = ""): string {
     let hash = 0;
-    console.log("name",name.length)
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
 
-function initials(name: string): string {
+function initials(name = ""): string {
     return name.split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+}
+
+function sanitizeCommentHtml(html = ""): string {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    doc.querySelectorAll("script, style, iframe, object, embed, link, meta, base").forEach((el) => el.remove());
+    doc.body.querySelectorAll("*").forEach((el) => {
+        Array.from(el.attributes).forEach((attr) => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value.trim().toLowerCase();
+            if (name.startsWith("on") || value.startsWith("javascript:") || value.startsWith("data:text/html")) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+    return doc.body.innerHTML;
+}
+
+function commentRow(comment: TicketComment): any {
+    const row = comment as any;
+    if (row?.data?.data && typeof row.data.data === "object") return row.data.data;
+    if (row?.data && typeof row.data === "object") return row.data;
+    return row;
+}
+
+function commentText(comment: TicketComment): string {
+    const row = commentRow(comment);
+    return String(row.content ?? row.comment ?? row.comment_text ?? row.text ?? "");
+}
+
+function commentDate(comment: TicketComment, key: "created" | "updated"): string {
+    const row = commentRow(comment);
+    return String(
+        key === "created"
+            ? row.created_at ?? row.createdAt ?? row.created_on ?? row.timestamp ?? ""
+            : row.updated_at ?? row.updatedAt ?? row.updated_on ?? "",
+    );
+}
+
+function commentAuthorName(comment: TicketComment): string {
+    const row = commentRow(comment);
+    return String(row.created_by_name ?? row.createdByName ?? row.user_name ?? row.created_by?.name ?? "User");
 }
 
 function formatBytes(bytes?: number): string | null {
@@ -72,7 +112,7 @@ function formatBytes(bytes?: number): string | null {
 
 // ─── CommentAvatar ────────────────────────────────────────────────────────────
 
-const CommentAvatar: React.FC<{ name: string; avatarUrl?: string }> = ({ name, avatarUrl }) => {
+const CommentAvatar: React.FC<{ name?: string; avatarUrl?: string }> = ({ name = "", avatarUrl }) => {
     if (avatarUrl) {
         return <img src={avatarUrl} alt={name} className="h-8 w-8 flex-shrink-0 rounded-full object-cover" />;
     }
@@ -166,22 +206,30 @@ const CommentBubble: React.FC<{
     onEdit: (commentId: string | number, content: string) => Promise<void>;
 }> = ({ comment, canEdit = false, isUpdating, onEdit }) => {
     const [editing, setEditing] = useState(false);
+    const row = commentRow(comment);
+    const content = commentText(comment);
+    const createdAt = commentDate(comment, "created");
+    const updatedAt = commentDate(comment, "updated");
+    const authorName = commentAuthorName(comment);
+    const attachments = Array.isArray(row.attachments) ? row.attachments : [];
 
     return (
         <div className="flex gap-3">
             <div className="flex flex-col items-center">
-                <CommentAvatar name={comment.created_by_name} avatarUrl={comment.created_by_avatar} />
+                <CommentAvatar name={authorName} avatarUrl={row.created_by_avatar} />
             </div>
 
             <div className="min-w-0 flex-1 pb-1">
                 <div className="mb-1.5 flex items-baseline gap-2">
                     <span className="text-xs font-semibold text-neutral-900 dark:text-neutral-dark-950">
-                        {comment.created_by_name}
+                        {authorName}
                     </span>
-                    <time className="text-xs text-neutral-400 dark:text-neutral-dark-400">
-                        {formateDateTime(comment.created_at)}
-                    </time>
-                    {comment.updated_at && comment.updated_at !== comment.created_at && (
+                    {createdAt && (
+                        <time className="text-xs text-neutral-400 dark:text-neutral-dark-400">
+                            {formateDateTime(createdAt)}
+                        </time>
+                    )}
+                    {updatedAt && updatedAt !== createdAt && (
                         <span className="text-xs italic text-neutral-400 dark:text-neutral-dark-400">(edited)</span>
                     )}
                     {canEdit && !editing && (
@@ -198,20 +246,20 @@ const CommentBubble: React.FC<{
 
                 {editing ? (
                     <InlineEditor
-                        initialContent={comment.content}
+                        initialContent={content}
                         isSaving={isUpdating}
-                        onSave={async (content) => { await onEdit(comment.id, content); setEditing(false); }}
+                        onSave={async (content) => { await onEdit(row.id, content); setEditing(false); }}
                         onCancel={() => setEditing(false)}
                     />
                 ) : (
                     <div className="rounded-xs rounded-tl-none border border-neutral-200 bg-neutral-50 px-3 py-2.5 dark:border-neutral-dark-200 dark:bg-neutral-dark-100">
                         <div
                             className="tiptap-editor text-xs leading-relaxed text-neutral-700 dark:text-neutral-dark-700 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_code]:rounded [&_code]:bg-neutral-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_code]:dark:bg-neutral-dark-200"
-                            dangerouslySetInnerHTML={{ __html: comment.content }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeCommentHtml(content) }}
                         />
-                        {comment.attachments && comment.attachments.length > 0 && (
+                        {attachments.length > 0 && (
                             <div className="mt-2 flex flex-wrap gap-1.5 border-t border-neutral-200 pt-2 dark:border-neutral-dark-200">
-                                {comment.attachments.map((att) => <AttachmentChip key={att.id} attachment={att} />)}
+                                {attachments.map((att) => <AttachmentChip key={att.id} attachment={att} />)}
                             </div>
                         )}
                     </div>
@@ -252,8 +300,7 @@ const ActivityFeed: React.FC<{
     currentUserId?: string | number;
     isUpdating?: boolean;
     onEditComment?: (commentId: string | number, content: string) => Promise<void>;
-}> = ({ comments, isLoading, currentUserId, isUpdating, onEditComment }) => {
-    console.log("comments",comments)
+}> = ({ comments = [], isLoading, currentUserId, isUpdating, onEditComment }) => {
     if (isLoading) {
         return (
             <div className="flex flex-1 items-center justify-center py-16">
@@ -283,12 +330,12 @@ const ActivityFeed: React.FC<{
         <div className="space-y-0">
             {comments.map((c, idx) => (
                 <div
-                    key={c.id}
+                    key={commentRow(c).id ?? idx}
                     className={`relative ${idx < comments.length - 1 ? "before:absolute before:left-[15px] before:top-8 before:h-[calc(100%-8px)] before:w-px before:bg-neutral-200 dark:before:bg-neutral-dark-200" : ""} pb-4`}
                 >
                     <CommentBubble
                         comment={c}
-                        canEdit={!!onEditComment && currentUserId != null && c.created_by === currentUserId}
+                        canEdit={!!onEditComment && currentUserId != null && commentRow(c).created_by === currentUserId}
                         isUpdating={!!isUpdating}
                         onEdit={onEditComment ?? (async () => undefined)}
                     />
@@ -315,6 +362,7 @@ const CommentComposer: React.FC<{
         await onSubmit({ content, attachments: files.length ? files : undefined });
         setContent("");
         setFiles([]);
+        console.log("content state reset to empty");
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -379,8 +427,7 @@ const CommentComposer: React.FC<{
 // ─── TicketCommentsPanel ──────────────────────────────────────────────────────
 
 const TicketCommentsPanel: React.FC<TicketCommentsPanelProps> = ({
-    ticket,
-    comments,
+    comments = [],
     total,
     isInitialLoading,
     isFetchingMore,

@@ -34,6 +34,7 @@ import {
 import { formateDateTime } from "@/utils/gridFormatters";
 import TicketCommentsPanel from "@/components/core/comments/TicketCommentsPanel";
 import { useTicketComments } from "@/hooks/useTicketComments";
+import { useAppSelector } from "@/store/hooks";
 
 /* ─────────────────────────── status badge ───────────────────────────────── */
 
@@ -74,6 +75,8 @@ const TicketDetails: React.FC = () => {
     const [showEdit, setShowEdit] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const navigate = useNavigate();
+    const currentUserId=useAppSelector((state) => state.auth.user?.id);
+    
 
     const {
         data: ticketResponse,
@@ -431,8 +434,11 @@ const TicketDetails: React.FC = () => {
                         isFetchingMore={commentsHook.isFetchingMore}
                         hasMore={commentsHook.hasMore}
                         isCreating={commentsHook.isCreating}
+                        isUpdating={commentsHook.isUpdating} 
                         fetchNextPage={commentsHook.fetchNextPage}
                         createComment={commentsHook.createComment}
+                        updateComment={commentsHook.updateComment} 
+                        currentUserId={currentUserId} 
                     />
                 </div>
 
@@ -448,8 +454,11 @@ const TicketDetails: React.FC = () => {
                     isFetchingMore={commentsHook.isFetchingMore}
                     hasMore={commentsHook.hasMore}
                     isCreating={commentsHook.isCreating}
+                    isUpdating={commentsHook.isUpdating} 
                     fetchNextPage={commentsHook.fetchNextPage}
                     createComment={commentsHook.createComment}
+                    updateComment={commentsHook.updateComment} 
+                    currentUserId={currentUserId} 
                 />
             </div>
 

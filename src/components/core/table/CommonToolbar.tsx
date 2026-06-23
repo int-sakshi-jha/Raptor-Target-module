@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { useState, useRef, useEffect, useMemo, useCallback, useLayoutEffect } from 'react';
 import Button from '../../common/Button';
-import { MoreVertical, Power, PowerOff, ChevronDown, Plus, Trash2, Filter as FilterIcon, Columns2, Download, FileText, Sheet, RefreshCw, Upload } from 'lucide-react';
+import { MoreVertical, Power, PowerOff, ChevronDown, Plus, Trash2, Filter as FilterIcon, Columns2, Download, FileText, Sheet, RefreshCw, Upload, Scan } from 'lucide-react';
 import Tabs from '../../common/Tabs';
 import Dropdown from '../../common/Dropdown';
 import toast from 'react-hot-toast';
@@ -957,6 +957,20 @@ export function buildAddAction(
     icon: <Plus className="w-4 h-4" />,
     onClick,
     variant: "primary",
+    show,
+  };
+}
+
+export function buildScanAction(
+  onClick: () => void,
+  show?: boolean,
+): ToolbarActionConfig {
+  return {
+    key: "scan",
+    label: "Scan",
+    icon: <Scan className="w-4 h-4" />,
+    onClick,
+    variant: "outline",
     show,
   };
 }

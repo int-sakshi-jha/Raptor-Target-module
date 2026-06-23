@@ -19,7 +19,10 @@ import { useResponsiveDataView } from "@/components/core/table/UseResponsiveData
 import { Table as TableIcon, LayoutGrid, Ticket } from "lucide-react";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "@/services/api";
-import { useGetAllTicketsQuery } from "@/services/operations/ticketAPI";
+import {
+    useGetAllTicketsQuery,
+    useGetMyTicketsQuery,
+} from "@/services/operations/ticketAPI";
 import { useGetAllUsersQuery } from "@/services/operations/userAPI"
 import {
     TICKET_STATUS_OPTIONS,
@@ -28,14 +31,14 @@ import {
     useDeleteTicketMutation,
     type TicketRow,
     type TicketListFilters,
-    type Option
+
 } from "@/services/operations/ticketAPI";
-import TicketCard from "@/components/core/customcards/TicketCard.tsx";
+
 import Modal from "@/components/common/Modal";
 import TicketForm from "@/components/core/form/TicketForm";
 import ConfirmationDialog from "@/components/common/ConfirmationDialog";
 import {
-    buildDisplayNumberColumn,
+
     buildDisplayTextColumn,
     getDateColumn,
     getActionsColumn,
@@ -97,12 +100,12 @@ function toTicketApiFilters(filters: FilterValues): TicketListFilters {
 
 // ─── Row actions cell renderer ────────────────────────────────────────────────
 
-const ticketRowActionsCellRenderer =createCrudRowActionsCellRenderer<TicketRow>({
-        actions: [
-            buildEditRowAction("ticketGrid_openEdit",PERMISSIONS.TICKET.UPDATE),
-            // buildDeleteRowAction("ticketGrid_requestDelete"),
-        ],
-    });
+const ticketRowActionsCellRenderer = createCrudRowActionsCellRenderer<TicketRow>({
+    actions: [
+        buildEditRowAction("ticketGrid_openEdit", PERMISSIONS.TICKET.UPDATE),
+        // buildDeleteRowAction("ticketGrid_requestDelete"),
+    ],
+});
 
 
 
@@ -134,6 +137,18 @@ const PlantTickets: React.FC = () => {
 
     const { permissions: userPermissions } = useAppSelector((state) => state.auth);
 
+    const canGetAll = hasPermission(
+        userPermissions,
+        PERMISSIONS.TICKET.GET_ALL
+    );
+
+    const canGetMy =
+        !canGetAll &&
+        hasPermission(
+            userPermissions,
+            PERMISSIONS.TICKET.GET_MY
+        );
+
     // ── API filters ───────────────────────────────────────────────────────────
     const apiFilters = useMemo(() => toTicketApiFilters(filters), [filters]);
 
@@ -144,23 +159,23 @@ const PlantTickets: React.FC = () => {
 
     const gridContext = useMemo(
         () => ({
-          ticketGrid_openEdit: (row: TicketRow) => {
-            setEditingTicket(row);
-            setShowEdit(true);
-          },
-        //   ticketGrid_requestDelete: (rowOrId: TicketRow | string) => {
-        //     const id = typeof rowOrId === "string" ? rowOrId : rowOrId?.id;
-        //     if (!id) return;
-        //     setConfirmTitle("Delete Asset");
-        //     setConfirmMessage("Are you sure you want to delete this asset? This action cannot be undone.");
-        //     setConfirmIds([id]);
-        //     confirmIdsRef.current = [id];
-        //     setConfirmOpen(true);
-        //   },
-          
+            ticketGrid_openEdit: (row: TicketRow) => {
+                setEditingTicket(row);
+                setShowEdit(true);
+            },
+            //   ticketGrid_requestDelete: (rowOrId: TicketRow | string) => {
+            //     const id = typeof rowOrId === "string" ? rowOrId : rowOrId?.id;
+            //     if (!id) return;
+            //     setConfirmTitle("Delete Asset");
+            //     setConfirmMessage("Are you sure you want to delete this asset? This action cannot be undone.");
+            //     setConfirmIds([id]);
+            //     confirmIdsRef.current = [id];
+            //     setConfirmOpen(true);
+            //   },
+
         }),
         []
-      );
+    );
 
 
 
@@ -190,7 +205,7 @@ const PlantTickets: React.FC = () => {
             })
 
         );
-    
+
     // const loadUserOptions = useCallback(
     //     async (): Promise<Option[]> =>
     //         (userOptionsData?.rows ?? userOptionsData?.data?.rows ?? []).map(
@@ -214,7 +229,7 @@ const PlantTickets: React.FC = () => {
     // ── Derived data ──────────────────────────────────────────────────────────
     const tableData = useMemo(() => ticketResponse?.data?.tickets ?? [], [ticketResponse?.data]);
     const pagination = useMemo(() => ticketResponse?.pagination, [ticketResponse?.pagination]);
-    console.log("tableData",tableData)
+    console.log("tableData", tableData)
     // ─── Column definitions ───────────────────────────────────────────────────
 
     const ticketColumns: CommonColumnConfig[] = useMemo(
@@ -267,43 +282,43 @@ const PlantTickets: React.FC = () => {
         });
 
         return [
-    ...sortFields,
-    buildSelectFilter("status", "Status", TICKET_STATUS_OPTIONS),
-    buildSelectFilter("priority", "Priority", TICKET_PRIORITY_OPTIONS),
+            ...sortFields,
+            buildSelectFilter("status", "Status", TICKET_STATUS_OPTIONS),
+            buildSelectFilter("priority", "Priority", TICKET_PRIORITY_OPTIONS),
 
-    buildDateRangeFilterField({
-        key: "created_at",
-        label: "Created At",
-        startKey: "created_from",
-        endKey: "created_to",
-    }),
+            buildDateRangeFilterField({
+                key: "created_at",
+                label: "Created At",
+                startKey: "created_from",
+                endKey: "created_to",
+            }),
 
-    buildDateRangeFilterField({
-        key: "resolved_at",
-        label: "Resolved At",
-        startKey: "resolved_from",
-        endKey: "resolved_to",
-    }),
+            buildDateRangeFilterField({
+                key: "resolved_at",
+                label: "Resolved At",
+                startKey: "resolved_from",
+                endKey: "resolved_to",
+            }),
 
-    buildDateRangeFilterField({
-        key: "updated_at",
-        label: "Updated At",
-        startKey: "updated_from",
-        endKey: "updated_to",
-    }),
+            buildDateRangeFilterField({
+                key: "updated_at",
+                label: "Updated At",
+                startKey: "updated_from",
+                endKey: "updated_to",
+            }),
 
-    buildSelectFilter(
-        "created_by",
-        "Created By",
-        userOptions,
-    ),
+            buildSelectFilter(
+                "created_by",
+                "Created By",
+                userOptions,
+            ),
 
-    buildSelectFilter(
-        "updated_by",
-        "Updated By",
-        userOptions,
-    ),
-];
+            buildSelectFilter(
+                "updated_by",
+                "Updated By",
+                userOptions,
+            ),
+        ];
     }, []);
 
     // ── View tabs ─────────────────────────────────────────────────────────────
@@ -313,7 +328,7 @@ const PlantTickets: React.FC = () => {
     ];
 
     const toolbarActions = [
-        buildAddAction(() => setShowCreate(true),hasPermission(userPermissions, PERMISSIONS.TICKET.CREATE)),
+        buildAddAction(() => setShowCreate(true), hasPermission(userPermissions, PERMISSIONS.TICKET.CREATE)),
         // buildDeleteAction(async () => {
         //     if (selectedIds.length === 0) return;
         //     setConfirmTitle("Delete Assets");
@@ -387,7 +402,7 @@ const PlantTickets: React.FC = () => {
                                 setPage(1);
                             }}
                             filterPanelRef={filterPanelRef}
-                            // customCardComponent={TicketCard}
+                        // customCardComponent={TicketCard}
                         />
                     </div>
 

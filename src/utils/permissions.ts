@@ -39,9 +39,7 @@ export const PERMISSIONS = {
     UPDATE:"update-ticket",
     GET_ALL:"get-all-ticket",
     GET_MY:"get-my-ticket",
-    GET_SPECIFIC:"get-specific-ticket"
-
-
+    GET_SPECIFIC:"get-specific-ticket",
   },
   TARGET:{
     CREATE:"create-target",

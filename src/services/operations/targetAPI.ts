@@ -119,10 +119,10 @@ export const TARGET_PERIOD_OPTIONS: Option[] = [
 ];
 
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZTVlZWQtMmM0My03ZTczLTg0OWYtZjU1MWU5OWZmOGMxIiwic2Vzc2lvbl9pZCI6IjAxOWVlMzY4LTNmZGItNzQwOS1iNDU5LTUwM2M0ODJhODEyZCIsImlhdCI6MTc4MTkzMTcyMCwiZXhwIjoyNjQ1OTMxNzIwfQ.Uhf_8c5dYDsCCfHtC0HFZY4nsk97hLTeRqP7ZesWlKk";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDE4LTU5ODgtNzU4YS04MzM2LTRkZGM4MGEwNWRkMyIsImlhdCI6MTc4MjIxMTY5NywiZXhwIjoyNjQ2MjExNjk3fQ.64ZJJ1iupov3XOstRJsiNnoaHvitpbCX42fn3QA6cNg";
 
 const api = axios.create({
-  baseURL: "http://192.168.2.67:5000/api/v1",
+  baseURL: "http://192.168.2.133:5200/api/v1",
   headers: {
     Authorization: `Bearer ${TOKEN}`,
     "Content-Type": "application/json",

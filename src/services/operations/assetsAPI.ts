@@ -6,7 +6,7 @@ import { assetEndpoints } from "../endpoints";
 import { toastError } from "@/utils/errorFormatter";
 import { cleanQueryFilters, toURLSearchParams, cleanEmptyStrings } from "@/utils/requestQuery";
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVkYTg3LTI1OWEtNzMyOS1hMTI1LWNlNDIyOGJjZjA2NSIsImlhdCI6MTc4MTc4Mjc1MCwiZXhwIjoyNjQ1NzgyNzUwfQ.HNIM8x9StSNiJxlGZd8xuEZAzaUHPde1sOKiQz5iQvI";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDU5LWQzZjUtNzU4Yy1iNWRmLTQxZTY5OWYzNDUyMSIsImlhdCI6MTc4MjIxNTk4OCwiZXhwIjoyNjQ2MjE1OTg4fQ.fZSqLXv46Ucq6TXWTA83WLR1USY6rh8Ur5fCNsShvrQ";
 
 const api = axios.create({
   baseURL: "http://192.168.2.69:5000/api/v1",
@@ -202,7 +202,7 @@ export const ASSET_STATUS_OPTIONS: Option[] = [
   { value: "active", label: "Active" },
   { value: "inactive", label: "Inactive" },
   { value: "faulty", label: "Faulty" },
-  { value: "under _maintenance", label: "Under Maintenance" },
+  { value: "under_maintenance", label: "Under Maintenance" },
   { value: "replaced", label: "Replaced" },
   { value: "dead", label: "Dead" },
 ];
@@ -568,4 +568,35 @@ export const useExportAssetsMutation = () => {
         },
     onError: toastError,
   });
+};
+
+export interface UploadAssetImageResponse {
+    message?: string;
+    data?: {
+        image_url: string;
+    };
+    image_url?: string;
+}
+
+export const useUploadAssetImageMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ file, plantId }: { file: File; plantId: string }) => {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("plant_id", plantId);
+            const { data } = await api.post(
+                assetEndpoints.UPLOAD_ASSET_IMAGE,
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } },
+            );
+            return data as UploadAssetImageResponse;
+        },
+        onSuccess: (data) => {
+            const msg = data?.message || "Image uploaded successfully";
+            toast.success(msg);
+            queryClient.invalidateQueries({ queryKey: ["assets", "list", "all"] });
+        },
+        onError: toastError,
+    });
 };

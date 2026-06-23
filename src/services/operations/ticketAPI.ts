@@ -8,7 +8,7 @@ import { cleanQueryFilters, toURLSearchParams, cleanEmptyStrings } from "@/utils
 
 //http://localhost:5000
 // ─── Interfaces ───────────────────────────────────────────────────────────────
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVlZWFkLTc3NTQtNzM1ZS1hMzM2LTdmMDE3YmMwZGUwNCIsImlhdCI6MTc4MjEyMDgwNiwiZXhwIjoyNjQ2MTIwODA2fQ.fRsqdKW_m8tb-CzndfT7-2reiGh4J1Cu5s9mOy813Lo";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDE4LTU5ODgtNzU4YS04MzM2LTRkZGM4MGEwNWRkMyIsImlhdCI6MTc4MjIxMTY5NywiZXhwIjoyNjQ2MjExNjk3fQ.64ZJJ1iupov3XOstRJsiNnoaHvitpbCX42fn3QA6cNg";
 
 const api = axios.create({
   baseURL: "http://192.168.2.118:5000/api/v1",

@@ -54,6 +54,7 @@ type AssetFormProps = {
     onSuccess?: () => void;
     close?: () => void;
     isOpen?: boolean;
+    
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -128,6 +129,7 @@ const AssetForm: React.FC<AssetFormProps> = ({
     mode = "create",
     initialValues,
     onSuccess,
+    
 }) => {
     const { id: plantId } = useParams<{ id: string }>();
     const isEdit = mode === "edit";
@@ -303,6 +305,7 @@ const AssetForm: React.FC<AssetFormProps> = ({
 
                         <Input
                             label="Asset Name"
+                            star
                             {...register("name", { required: "Required" })}
                             errors={errors.name}
                         />
@@ -310,9 +313,11 @@ const AssetForm: React.FC<AssetFormProps> = ({
                         <Controller
                             name="status"
                             control={control}
+                            rules={{ required: "Status is required" }}
                             render={({ field }) => (
                                 <AsyncSelect
                                     label="Status"
+                                    star
                                     loadOptions={loadStatusOptions}
                                     value={field.value}
                                     onChange={(v) => field.onChange(v ?? null)}
@@ -322,7 +327,7 @@ const AssetForm: React.FC<AssetFormProps> = ({
                         />
 
                         <Input label="Model Number" {...register("model_number")} />
-                        <Input label="Serial Number" {...register("serial_number")} />
+                        <Input label="Serial Number" star {...register("serial_number",{ required: "Required" })} />
                         <Input label="Manufacturer" {...register("manufacturer_name")} />
                         <div className="space-y-2 md:col-span-2">
                             <SectionSubHeader icon={Settings} title="Specifications" />
