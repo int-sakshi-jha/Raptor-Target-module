@@ -46,7 +46,7 @@ import {
 import {
   createCrudRowActionsCellRenderer,
 } from "@/components/core/table/TableRenderers";
-import { PERMISSIONS,hasPermission } from "@/utils/permissions";
+import { PERMISSIONS, hasPermission, isAdminOrSuperAdminRole } from "@/utils/permissions";
 import { useAppSelector } from "@/store/hooks";
 
 // ─── Entity key ───────────────────────────────────────────────────────────────
@@ -71,6 +71,7 @@ const {
   buildSortFilterFields,
   createFilterDefaults,
   setScalarFilterParam,
+  buildDateRangeFilterField
 } = CommonFilterPanel;
 
 const TARGET_FILTER_DEFAULTS: FilterValues = createFilterDefaults({
@@ -100,7 +101,7 @@ function toTargetApiFilters(filters: FilterValues): TargetListFilters {
   setScalarFilterParam(base, filters, "component");
   setScalarFilterParam(base, filters, "parameter");
   setScalarFilterParam(base, filters, "status");
-  setScalarFilterParam(base, filters, "period");
+  setScalarFilterParam(base, filters, "target_period");
   setScalarFilterParam(base, filters, "start_date");
   setScalarFilterParam(base, filters, "end_date");
 
@@ -112,8 +113,8 @@ function toTargetApiFilters(filters: FilterValues): TargetListFilters {
 const targetRowActionsCellRenderer =
   createCrudRowActionsCellRenderer<TargetRow>({
     actions: [
-      buildEditRowAction("targetGrid_openEdit",PERMISSIONS.TARGET.UPDATE),
-      buildDeleteRowAction("targetGrid_requestDelete",PERMISSIONS.TARGET.DELETE),
+      buildEditRowAction("targetGrid_openEdit", PERMISSIONS.TARGET.UPDATE),
+      buildDeleteRowAction("targetGrid_requestDelete", PERMISSIONS.TARGET.DELETE),
     ],
   });
 
@@ -144,7 +145,8 @@ const Target: React.FC = () => {
   const columnPanelRef = React.useRef<{ openPanel: () => void }>(null);
   const tableRef = React.useRef<CommonTableHandle>(null);
 
-  const { permissions: userPermissions } = useAppSelector((state) => state.auth);
+  const { permissions: userPermissions, role: userRole } = useAppSelector((state) => state.auth);
+  const isAdminOrSuper = isAdminOrSuperAdminRole(userRole);
 
   // ── API filters ───────────────────────────────────────────────────────────
   const apiFilters = useMemo(() => toTargetApiFilters(filters), [filters]);
@@ -153,6 +155,7 @@ const Target: React.FC = () => {
 
   const gridContext = useMemo(
     () => ({
+      userPermissions: isAdminOrSuper ? ["super-admin"] : (userPermissions ?? []),
       targetGrid_openEdit: (row: TargetRow) => {
         setEditingTarget(row);
         setShowEdit(true);
@@ -168,7 +171,7 @@ const Target: React.FC = () => {
         setConfirmOpen(true);
       },
     }),
-    []
+    [isAdminOrSuper, userPermissions]
   );
 
   // ── Data query ────────────────────────────────────────────────────────────
@@ -182,6 +185,7 @@ const Target: React.FC = () => {
     filters: apiFilters,
     page,
     limit: pageSize,
+    plantId: plantId ?? "",
     enabled: true,
   });
   console.log(targetResponse)
@@ -198,7 +202,13 @@ const Target: React.FC = () => {
   }, [isError]);
 
   // ── Derived data ──────────────────────────────────────────────────────────
-  const tableData = useMemo(() => targetResponse?.data?.targets ?? [], [targetResponse?.data?.targets]);
+  const tableData = useMemo(
+    () =>
+      (targetResponse?.data?.targets ?? []).filter(
+        (t: TargetRow) => t.plant_id === plantId
+      ),
+    [targetResponse?.data?.targets, plantId]
+  );
   const pagination = useMemo(() => targetResponse?.pagination, [targetResponse?.pagination]);
 
   // ─── Column definitions ───────────────────────────────────────────────────────
@@ -209,7 +219,7 @@ const Target: React.FC = () => {
       getLinkColumn("tenant_name", "Tenant", (params) => (params.data?.id ? `/tenant/${params.data?.tenant_id}` : null), { minWidth: 220, editable: true }),
       getLinkColumn("plant_name", "Plant", (params) => (params.data?.id ? `/plants/${params.data?.plant_id}` : null), { minWidth: 220, editable: true }),
       getLinkColumn("component_name", "Component", (params) => (params.data?.id ? `/components/${params.data?.component_id}` : null), { minWidth: 220, editable: true }),
-      
+
       buildDisplayTextColumn("status", "Status", { minWidth: 140 }),
       buildDisplayTextColumn("target_period", "Period", { minWidth: 140 }),
       getDateColumn("start_date", "Start Date", {
@@ -240,11 +250,34 @@ const Target: React.FC = () => {
     return [
       ...sortFields,
       buildSelectFilter("status", "Status", TARGET_STATUS_OPTIONS),
-      buildSelectFilter("period", "Period", TARGET_PERIOD_OPTIONS),
-      { key: "start_date", label: "Start Date", type: "daterange" as const, startKey: "start_date_from", endKey: "start_date_to" },
-      { key: "end_date", label: "End Date", type: "daterange" as const, startKey: "end_date_from", endKey: "end_date_to" },
-      { key: "created_at", label: "Created At", type: "daterange" as const, startKey: "created_at_from", endKey: "created_at_to" },
-      { key: "updated_at", label: "Updated At", type: "daterange" as const, startKey: "updated_at_from", endKey: "updated_at_to" },
+      buildSelectFilter("target_period", "Period", TARGET_PERIOD_OPTIONS),
+      buildDateRangeFilterField({
+        key: "start_date",
+        label: "Start Date",
+        startKey: "start_date_from",
+        endKey: "start_date_to",
+      }),
+
+      buildDateRangeFilterField({
+        key: "end_date",
+        label: "End Date",
+        startKey: "end_date_from",
+        endKey: "end_date_to",
+      }),
+
+      buildDateRangeFilterField({
+        key: "created_at",
+        label: "Created At",
+        startKey: "created_at_from",
+        endKey: "created_at_to",
+      }),
+
+      buildDateRangeFilterField({
+        key: "updated_at",
+        label: "Updated At",
+        startKey: "updated_at_from",
+        endKey: "updated_at_to",
+      }),
     ];
   }, []);
 
@@ -255,7 +288,7 @@ const Target: React.FC = () => {
   ];
 
   const toolbarActions = [
-    buildAddAction(() => setShowCreate(true),hasPermission(userPermissions, PERMISSIONS.TARGET.CREATE)),
+    buildAddAction(() => setShowCreate(true), isAdminOrSuper || hasPermission(userPermissions, PERMISSIONS.TARGET.CREATE)),
     buildDeleteAction(async () => {
       if (selectedIds.length === 0) return;
       setConfirmTitle("Delete Devices");
@@ -267,7 +300,7 @@ const Target: React.FC = () => {
       setConfirmOpen(true);
     }, {
       disabled: selectedIds.length === 0,
-      show: hasPermission(userPermissions, PERMISSIONS.TARGET.DELETE),
+      show: isAdminOrSuper || hasPermission(userPermissions, PERMISSIONS.TARGET.DELETE),
     }),
     buildFiltersAction(),
     buildColumnsAction(),
@@ -302,7 +335,7 @@ const Target: React.FC = () => {
               columns={localColumns}
               defaultColumns={targetColumns}
               kanbanOptions={TARGET_STATUS_OPTIONS}
-              selectedView={selectedView as "table"|"cards"}
+              selectedView={selectedView as "table" | "cards"}
               tableRef={tableRef}
               page={page}
               pageSize={pageSize}
@@ -328,7 +361,7 @@ const Target: React.FC = () => {
                 setPage(1);
               }}
               filterPanelRef={filterPanelRef}
-              
+
             />
           </div>
 
@@ -347,6 +380,7 @@ const Target: React.FC = () => {
           onSuccess={() => setShowCreate(false)}
           close={() => setShowCreate(false)}
           isOpen={showCreate}
+          plantId={plantId ?? ""}
         />
       </Modal>
 
@@ -374,6 +408,7 @@ const Target: React.FC = () => {
               setEditingTarget(null);
             }}
             isOpen={!!(showEdit && editingTarget)}
+            plantId={plantId ?? ""}
           />
         )}
       </Modal>

@@ -44,11 +44,13 @@ export const PERMISSIONS = {
   TARGET:{
     CREATE:"create-target",
     UPDATE:"update-target",
+    SUMMARY:"get-target-summary",
     DELETE:"delete-target",
     GET_ALL:"get-all-target",
-    GET_SPECIFIC:"get-specific-target"
-
+    GET_SPECIFIC:"get-specific-target",
+    GET_TARGET_BY_USER: "get-target-by-user"
   },
+ 
   INVERTER_TYPE: {
     CREATE: "create-inverter-type",
     UPDATE: "update-inverter-type",

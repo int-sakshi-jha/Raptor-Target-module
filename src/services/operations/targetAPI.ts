@@ -109,20 +109,19 @@ export const TARGET_STATUS_OPTIONS: Option[] = [
 ];
 
 export const TARGET_PERIOD_OPTIONS: Option[] = [
-  { value: "hourly", label: "Hourly" },
   { value: "daily", label: "Daily" },
   { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
-  { value: "quarterly", label: "Quarterly" },
+  { value: "seasonly", label: "Seasonly" },
   { value: "yearly", label: "Yearly" },
   { value: "custom", label: "Custom" },
 ];
 
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDE4LTU5ODgtNzU4YS04MzM2LTRkZGM4MGEwNWRkMyIsImlhdCI6MTc4MjIxMTY5NywiZXhwIjoyNjQ2MjExNjk3fQ.64ZJJ1iupov3XOstRJsiNnoaHvitpbCX42fn3QA6cNg";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmOTM4LTNkZjEtNzRmMS1hNmJhLWY4MjIzMDlhZjYxNSIsImlhdCI6MTc4MjI5NzY3MywiZXhwIjoyNjQ2Mjk3NjczfQ.6bU1PnenJUSdACxrC9htEm0pwdPgP2KN0uvB-_RcKDo";
 
 const api = axios.create({
-  baseURL: "http://192.168.2.133:5200/api/v1",
+  baseURL: "http://192.168.2.67:5000/api/v1",
   headers: {
     Authorization: `Bearer ${TOKEN}`,
     "Content-Type": "application/json",
@@ -143,6 +142,7 @@ export const useGetAllTargetsQuery = ({
     filters?: TargetListFilters;
     page?: number;
     limit?: number;
+    plantId?:string;
     enabled?: boolean;
 }) => {
     const cleanFilters = cleanQueryFilters(filters as Record<string, unknown>);

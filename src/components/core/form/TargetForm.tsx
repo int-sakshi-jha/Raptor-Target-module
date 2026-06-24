@@ -11,12 +11,12 @@ import {
     useCreateTargetMutation,
     useUpdateTargetMutation,
     type CreateTargetInput,
+    type UpdateTargetInput,
     type TargetParametersPayload,
     type TargetParametersResponse,
     type TargetRow,
 } from "@/services/operations/targetAPI";
-import { fetchTenantNames } from "@/services/operations/tenantAPI";
-import { fetchPlantNames } from "@/services/operations/plantAPI";
+
 import { fetchComponentNames } from "@/services/operations/componentAPI";
 import { fetchTagMapKeyOptions } from "@/services/operations/historyAPI";
 import { ArrowRight, BarChart2, Box, Calendar, Plus, X } from "lucide-react";
@@ -30,8 +30,6 @@ export type TargetParameterFormRow = {
 };
 
 export type TargetFormValues = {
-    tenant_id: Option | null;
-    plant_id: Option | null;
     target_name: string;
     component_id: Option | null;
     parameters: TargetParameterFormRow[];
@@ -47,6 +45,7 @@ type TargetFormProps = {
     onSuccess?: () => void;
     close?: () => void;
     isOpen?: boolean;
+    plantId?: string;
 };
 
 const buildOption = (value: string | null | undefined, label?: string | null): Option | null =>
@@ -77,8 +76,6 @@ export const mapTargetFormRowsToPayload = (
 
 function buildEditFormValues(iv: Partial<TargetRow>): TargetFormValues {
     return {
-        tenant_id: buildOption(iv.tenant_id, iv.tenant_name),
-        plant_id: buildOption(iv.plant_id, iv.plant_name),
         target_name: iv.target_name ?? "",
         component_id: buildOption(iv.component_id, iv.component_name),
         parameters: mapTargetParametersToFormRows(iv.parameters),
@@ -90,8 +87,6 @@ function buildEditFormValues(iv: Partial<TargetRow>): TargetFormValues {
 }
 
 const DEFAULT_VALUES: TargetFormValues = {
-    tenant_id: null,
-    plant_id: null,
     target_name: "",
     component_id: null,
     parameters: [],
@@ -107,6 +102,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
     mode = "create",
     initialValues,
     onSuccess,
+    plantId = "",
 }) => {
     const isEdit = mode === "edit";
 
@@ -141,8 +137,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
         },
     });
 
-    const selectedTenantId = watch("tenant_id")?.value ?? "";
-    const selectedPlantId = watch("plant_id")?.value ?? "";
+    const selectedPlantId = plantId;
     const selectedComponentId = watch("component_id")?.value ?? "";
     const parameterRows = watch("parameters");
     const selectedParameterValues = useMemo(
@@ -150,24 +145,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
         [parameterRows],
     );
 
-    const [tenantLabelCache, setTenantLabelCache] = useState<Record<string, string>>(() => {
-        if (initialValues?.tenant_id) {
-            return { [initialValues.tenant_id]: initialValues.tenant_name || initialValues.tenant_id };
-        }
-        return {};
-    });
 
-    const [plantLabelCache, setPlantLabelCache] = useState<Record<string, string>>(() => {
-        if (initialValues?.plant_id) {
-            return { [initialValues.plant_id]: initialValues.plant_name || initialValues.plant_id };
-        }
-        return {};
-    });
-
-    const tenantSearchCacheRef = useRef<Record<string, Option[]>>({});
-    const tenantRequestRef = useRef<Record<string, Promise<Option[]>>>({});
-    const plantSearchCacheRef = useRef<Record<string, Option[]>>({});
-    const plantRequestRef = useRef<Record<string, Promise<Option[]>>>({});
     const componentSearchCacheRef = useRef<Record<string, Option[]>>({});
     const componentRequestRef = useRef<Record<string, Promise<Option[]>>>({});
     const parameterSearchCacheRef = useRef<Record<string, Option[]>>({});
@@ -182,61 +160,61 @@ const TargetForm: React.FC<TargetFormProps> = ({
         if (keys.length > CACHE_LIMIT) delete record[keys[0]];
     };
 
-    const loadTenantOptions = useCallback(async (search = ""): Promise<Option[]> => {
-        const cacheKey = search.trim().toLowerCase();
-        const cached = tenantSearchCacheRef.current[cacheKey];
-        if (cached) return cached;
+    // const loadTenantOptions = useCallback(async (search = ""): Promise<Option[]> => {
+    //     const cacheKey = search.trim().toLowerCase();
+    //     const cached = tenantSearchCacheRef.current[cacheKey];
+    //     if (cached) return cached;
 
-        const inFlight = tenantRequestRef.current[cacheKey];
-        if (inFlight) return inFlight;
+    //     const inFlight = tenantRequestRef.current[cacheKey];
+    //     if (inFlight) return inFlight;
 
-        const request = fetchTenantNames(search, 1, 100)
-            .then((options: Option[]) => {
-                setTenantLabelCache((prev) => {
-                    const next = { ...prev };
-                    for (const option of options) next[option.value] = option.label;
-                    return next;
-                });
-                tenantSearchCacheRef.current[cacheKey] = options;
-                trimCache(tenantSearchCacheRef.current);
-                return options;
-            })
-            .finally(() => {
-                delete tenantRequestRef.current[cacheKey];
-            });
+    //     const request = fetchTenantNames(search, 1, 100)
+    //         .then((options: Option[]) => {
+    //             setTenantLabelCache((prev) => {
+    //                 const next = { ...prev };
+    //                 for (const option of options) next[option.value] = option.label;
+    //                 return next;
+    //             });
+    //             tenantSearchCacheRef.current[cacheKey] = options;
+    //             trimCache(tenantSearchCacheRef.current);
+    //             return options;
+    //         })
+    //         .finally(() => {
+    //             delete tenantRequestRef.current[cacheKey];
+    //         });
 
-        tenantRequestRef.current[cacheKey] = request;
-        return request;
-    }, []);
+    //     tenantRequestRef.current[cacheKey] = request;
+    //     return request;
+    // }, []);
 
-    const loadPlantOptions = useCallback(async (search = ""): Promise<Option[]> => {
-        if (!selectedTenantId) return [];
+    // const loadPlantOptions = useCallback(async (search = ""): Promise<Option[]> => {
+    //     if (!selectedTenantId) return [];
 
-        const cacheKey = `${selectedTenantId}::${search.trim().toLowerCase()}`;
-        const cached = plantSearchCacheRef.current[cacheKey];
-        if (cached) return cached;
+    //     const cacheKey = `${selectedTenantId}::${search.trim().toLowerCase()}`;
+    //     const cached = plantSearchCacheRef.current[cacheKey];
+    //     if (cached) return cached;
 
-        const inFlight = plantRequestRef.current[cacheKey];
-        if (inFlight) return inFlight;
+    //     const inFlight = plantRequestRef.current[cacheKey];
+    //     if (inFlight) return inFlight;
 
-        const request = fetchPlantNames(search, 1, 100, selectedTenantId)
-            .then((options: Option[]) => {
-                setPlantLabelCache((prev) => {
-                    const next = { ...prev };
-                    for (const option of options) next[option.value] = option.label;
-                    return next;
-                });
-                plantSearchCacheRef.current[cacheKey] = options;
-                trimCache(plantSearchCacheRef.current);
-                return options;
-            })
-            .finally(() => {
-                delete plantRequestRef.current[cacheKey];
-            });
+    //     const request = fetchPlantNames(search, 1, 100, selectedTenantId)
+    //         .then((options: Option[]) => {
+    //             setPlantLabelCache((prev) => {
+    //                 const next = { ...prev };
+    //                 for (const option of options) next[option.value] = option.label;
+    //                 return next;
+    //             });
+    //             plantSearchCacheRef.current[cacheKey] = options;
+    //             trimCache(plantSearchCacheRef.current);
+    //             return options;
+    //         })
+    //         .finally(() => {
+    //             delete plantRequestRef.current[cacheKey];
+    //         });
 
-        plantRequestRef.current[cacheKey] = request;
-        return request;
-    }, [selectedTenantId]);
+    //     plantRequestRef.current[cacheKey] = request;
+    //     return request;
+    // }, [selectedTenantId]);
 
     const loadComponentOptions = useCallback(async (search = ""): Promise<Option[]> => {
         if (!selectedPlantId) return [];
@@ -324,9 +302,8 @@ const TargetForm: React.FC<TargetFormProps> = ({
     const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
     const onSubmit = (data: TargetFormValues) => {
-        const finalData: CreateTargetInput = {
-            tenant_id: data.tenant_id?.value ?? "",
-            plant_id: data.plant_id?.value ?? "",
+        const finalData = {
+            plant_id: plantId,
             target_name: data.target_name.trim(),
             component_id: data.component_id?.value ?? "",
             parameters: mapTargetFormRowsToPayload(data.parameters),
@@ -338,7 +315,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
 
         if (isEdit && initialValues?.id) {
             updateMutation.mutate(
-                { id: initialValues.id, ...finalData },
+                { id: initialValues.id, ...finalData } as UpdateTargetInput,
                 {
                     onSuccess: () => onSuccess?.(),
                     onError: (error) => {
@@ -347,7 +324,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
                 },
             );
         } else {
-            createMutation.mutate(finalData, {
+            createMutation.mutate(finalData as CreateTargetInput, {
                 onSuccess: () => {
                     reset();
                     onSuccess?.();
@@ -369,7 +346,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
                 <div className="space-y-2">
                     <SectionSubHeader icon={Box} title="Basic Information" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <Controller
+                        {/* <Controller
                             name="tenant_id"
                             control={control}
                             rules={{ required: "Tenant is required" }}
@@ -432,7 +409,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
                                     isClearable
                                 />
                             )}
-                        />
+                        /> */}
 
                         <Input
                             label="Target Name"
