@@ -6,15 +6,15 @@ import { toastError } from "@/utils/errorFormatter";
 import { commentsEndpoints } from "../endpoints";
 
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmMzRmLTJiNzUtNzA5Yy05NjMyLTVmNjI3MTZmODUyOSIsImlhdCI6MTc4MjE5ODUxMiwiZXhwIjoyNjQ2MTk4NTEyfQ.wKtm0s617-hQvYHdFPAQ-wk7RNlVnpA58Ptu1FrDavs";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWYwNDAxLWQxNWYtNzUwZS04Nzk2LWJmMDc5YTVlNjQzYiIsImlhdCI6MTc4MjQ3ODY1NSwiZXhwIjoyNjQ2NDc4NjU1fQ.awOa_AfYBh896mqInwLL4YRQkLTlwAwQTXaOjb-fFz4";
 
 const api = axios.create({
-  baseURL: "http://192.168.2.118:5000/api/v1",
-  headers: {
-    Authorization: `Bearer ${TOKEN}`,
-    "Content-Type": "application/json",
-  },
-}); 
+    baseURL: "http://192.168.2.118:5000/api/v1",
+    headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        "Content-Type": "application/json",
+    },
+});
 
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -107,73 +107,83 @@ export const useCreateCommentMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ ticket_id, content, attachments }: CreateCommentInput) => {
+        mutationFn: async ({
+            ticket_id,
+            content,
+            attachments,
+        }: CreateCommentInput) => {
             if (attachments && attachments.length > 0) {
                 const fd = new FormData();
-                fd.append("entity_name", "ticket");
-                fd.append("entity_id", `${ticket_id}`);
                 fd.append("comment", content);
-                attachments.forEach((f) => fd.append("attachments", f));
-                const { data } = await api.post(
-                    commentsEndpoints.CREATE_COMMENT,
-                    fd,
-                    { headers: { "Content-Type": "multipart/form-data" } },
+                attachments.forEach((file) =>
+                    fd.append("attachments", file)
                 );
+
+                const { data } = await api.post(
+                    commentsEndpoints.CREATE_COMMENT(ticket_id),
+                    fd,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    },
+                );
+
                 return (data?.data ?? data) as TicketComment;
             }
+
             const { data } = await api.post(
-                commentsEndpoints.CREATE_COMMENT,
+                commentsEndpoints.CREATE_COMMENT(ticket_id),
                 {
-                    entity_name: "ticket",
-                    entity_id: ticket_id,
                     comment: content,
                 },
             );
+
             return (data?.data ?? data) as TicketComment;
         },
+
         onSuccess: (data, variables) => {
             toast.success(
                 (data as any)?.message || "Comment posted successfully",
             );
+
             queryClient.invalidateQueries({
-                queryKey: ["tickets", `${variables.ticket_id}`, "comments"],
+                queryKey: ["tickets", variables.ticket_id, "comments"],
             });
         },
+
         onError: toastError,
     });
 };
-
 export const useUpdateCommentMutation = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (input: UpdateCommentInput) => {
-            const { comment_id, content, attachments } = input;
-            if (attachments && attachments.length > 0) {
-                const fd = new FormData();
-                fd.append("content", content);
-                attachments.forEach((f) => fd.append("attachments", f));
-                const { data } = await api.put(
-                    commentsEndpoints.UPDATE_COMMENT(comment_id),
-                    fd,
-                    { headers: { "Content-Type": "multipart/form-data" } },
-                );
-                return (data?.data ?? data) as TicketComment;
-            }
+        mutationFn: async ({
+            ticket_id,
+            comment_id,
+            content,
+        }: UpdateCommentInput) => {
             const { data } = await api.patch(
-                commentsEndpoints.UPDATE_COMMENT(comment_id),
-                { content },
+                commentsEndpoints.UPDATE_COMMENT(ticket_id, comment_id),
+                {
+                    comment: content,
+                },
             );
+
             return (data?.data ?? data) as TicketComment;
         },
+
         onSuccess: (data, variables) => {
             toast.success(
                 (data as any)?.message || "Comment updated successfully",
             );
+
             queryClient.invalidateQueries({
-                queryKey: ["tickets", `${variables.ticket_id}`, "comments"],
+                queryKey: ["tickets", variables.ticket_id, "comments"],
             });
         },
+
         onError: toastError,
     });
 };

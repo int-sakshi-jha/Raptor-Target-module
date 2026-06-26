@@ -27,18 +27,19 @@ export const PERMISSIONS = {
   ASSET: {
     CREATE: "create-asset",
     UPDATE: "update-asset",
-    DELETE: "delete-asset",
+    DELETE: "delete-assets",
     GET_ALL: "get-all-asset",
     GET_SPECIFIC: "get-specific-asset",
     REPLACE:"replace-asset",
-    EXPORT:"export-asset",
-    IMPORT:"import-asset"
+    EXPORT:"export-assets",
+    IMPORT:"import-assets"
   },
   TICKET:{
     CREATE: "create-ticket",
     UPDATE:"update-ticket",
-    GET_ALL:"get-all-ticket",
-    GET_MY:"get-my-ticket",
+    DELETE:"delete-ticket",
+    GET_ALL:"get-all-tickets",
+    GET_MY:"get-my-own-tickets",
     GET_SPECIFIC:"get-specific-ticket",
   },
   TARGET:{

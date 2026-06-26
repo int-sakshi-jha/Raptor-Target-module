@@ -27,7 +27,7 @@ type ComponentTypeOption = Option & { id?: string };
 
 type TicketFormValues = {
     plant: Option | null;
-    component_type: ComponentTypeOption | null; 
+    
     component: Option | null;
     title: string;
     description: string;
@@ -57,7 +57,7 @@ const buildOption = (value: string | null | undefined): Option | null =>
 function buildEditFormValues(iv: Partial<TicketRow>): TicketFormValues {
     return {
         plant: iv.plant_id ? { value: iv.plant_id, label: iv.plant_name ?? iv.plant_id } : null,
-        component_type: iv.component_type_id ? { value: iv.component_type_id, label: iv.component_type ?? iv.component_type_id } : null,
+        // component_type: iv.component_type_id ? { value: iv.component_type_id, label: iv.component_type ?? iv.component_type_id } : null,
         component: iv.component_id ? { value: iv.component_id, label: iv.component ?? iv.component_id } : null,
         title: iv.title ?? "",
         description: iv.description ?? "",
@@ -74,7 +74,6 @@ function buildEditFormValues(iv: Partial<TicketRow>): TicketFormValues {
 
 const DEFAULT_VALUES: TicketFormValues = {
     plant: null,
-    component_type: null,
     component: null,
     title: "",
     description: "",
@@ -116,7 +115,8 @@ const TicketForm: React.FC<TicketFormProps> = ({
                 : DEFAULT_VALUES,
     });
 
-    const selectedComponentType = watch("component_type");
+    const selectedPlant = watch("plant");
+    
 
     // ── Options ────────────────────────────────────────────────────────────────
 
@@ -130,7 +130,6 @@ const TicketForm: React.FC<TicketFormProps> = ({
     );
 
     const { data: componentTypeData } = useGetComponentTypeOptionsQuery();
-    console.log('com', componentTypeData)
 
     const loadComponentTypeOptions = useCallback(
         async (): Promise<Option[]> => componentTypeData ?? [],
@@ -138,7 +137,10 @@ const TicketForm: React.FC<TicketFormProps> = ({
     );
 
 
-    const { data: componentData } = useGetAllComponentQuery({});
+    const { data: componentData } = useGetAllComponentQuery({
+        filters: selectedPlant?.value ? { plant_id: selectedPlant.value } : {},
+        enabled: !!selectedPlant?.value,
+    });
     const loadComponentOptions = useCallback(
         async (): Promise<Option[]> => (componentData?.data.data ?? []).map(
             (u: any) => ({ value: u.id, label: u.component_name ?? u.email ?? u.id })
@@ -179,15 +181,15 @@ const TicketForm: React.FC<TicketFormProps> = ({
     const onSubmit = (data: TicketFormValues) => {
     const finalData: CreateTicketInput = {
         plant_id: data.plant?.value ?? null,
-        component_type_id: (data.component_type as ComponentTypeOption)?.id ?? null,
+        
         component_id: data.component?.value ?? null,
         name: data.name.trim(),
         email: data.email.trim(),
         phone_number: data.phone_number.trim(),
         title: data.title.trim(),
         description: data.description.trim(),
-        status: data.status?.value ?? "",
-        priority: data.priority?.value ?? "",
+        status: data.status?.value ?? "open",
+        priority: data.priority?.value ?? "medium",
         
         due_date: data.due_date || null,
     };
@@ -308,13 +310,16 @@ const TicketForm: React.FC<TicketFormProps> = ({
                                     apiSearch
                                     loadOptions={loadPlantOptions}
                                     value={field.value}
-                                    onChange={(v) => field.onChange(v ?? null)}
+                                    onChange={(v) => {
+                                        field.onChange(v ?? null);
+                                        setValue("component", null);
+                                    }}
                                     isClearable
                                 />
                             )}
                         />
 
-                        <Controller
+                        {/* <Controller
                             name="component_type"
                             control={control}
                             render={({ field }) => (
@@ -327,7 +332,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
                                     isClearable
                                 />
                             )}
-                        />
+                        /> */}
 
                         <Controller
                             name="component"
@@ -340,7 +345,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
                                     value={field.value}
                                     onChange={(v) => field.onChange(v ?? null)}
                                     isClearable
-                                    isDisabled={!selectedComponentType}
+                                    isDisabled={!selectedPlant}
                                 />
                             )}
                         />

@@ -6,7 +6,7 @@ import { assetEndpoints } from "../endpoints";
 import { toastError } from "@/utils/errorFormatter";
 import { cleanQueryFilters, toURLSearchParams, cleanEmptyStrings } from "@/utils/requestQuery";
 
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDU5LWQzZjUtNzU4Yy1iNWRmLTQxZTY5OWYzNDUyMSIsImlhdCI6MTc4MjIxNTk4OCwiZXhwIjoyNjQ2MjE1OTg4fQ.fZSqLXv46Ucq6TXWTA83WLR1USY6rh8Ur5fCNsShvrQ";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmZWNkLTM4OGItNzUwMy05MTE3LTIzMDVmMDI4NTBjZSIsImlhdCI6MTc4MjM5MTMyMiwiZXhwIjoyNjQ2MzkxMzIyfQ.tNrcJ0l7Y4D6M83k3SbfblSAZJnWDC5tlQpynIKbx_M";
 
 const api = axios.create({
   baseURL: "http://192.168.2.69:5000/api/v1",
@@ -189,11 +189,6 @@ export const ASSET_SORT_OPTIONS:Option[] = [
   { value: "installation_date", label: "Installation Date" },
   { value: "warranty_end_date", label: "Warranty End Date" },
 ];
-export const ASSET_CATEGORY_OPTIONS:Option[]=[
-    {
-        value:"trial",label:"Trial"
-    },
-]
 
 
 
@@ -432,64 +427,6 @@ export const useReplaceAssetMutation = () => {
     });
 };
 
-
-
-// export const useDeleteAssetMutation = () => {
-//     const queryClient = useQueryClient();
-
-//     return useMutation({
-//         mutationFn: async (plantIds: string[]) => {
-//             if (!plantIds || plantIds.length === 0) throw new Error("No asset selected for deletion");
-//             await Promise.all(
-//                 plantIds.map((id) => api.delete(assetEndpoints.DELETE_ASSET(id)))
-//             );
-//             return { message: "Plant deleted successfully" };
-//         },
-//         onSuccess: (data) => {
-//             const msg = (data as any)?.data?.message || (data as any)?.message || "Asset(s) deleted successfully";
-//             toast.success(msg);
-//             queryClient.invalidateQueries({ queryKey: ["plantAsset"] });
-            
-//         },
-//         onError: toastError,
-//     });
-// };
-
-// export const useExportAssetsMutation = () => {
-//     return useMutation({
-//         mutationFn: async () => {
-//             const response = await api.get(
-//                 assetEndpoints.EXPORT_ASSETS,
-//                 {
-//                     responseType: "blob",
-//                 }
-//             );
-
-//             return response.data as Blob;
-//         },
-
-//         onSuccess: (blob) => {
-//             const url = window.URL.createObjectURL(blob);
-
-//             const link = document.createElement("a");
-//             link.href = url;
-
-//             const date = new Date().toISOString().split("T")[0];
-//             link.download = `assets_export_${date}.xlsx`;
-
-//             document.body.appendChild(link);
-//             link.click();
-//             link.remove();
-
-//             window.URL.revokeObjectURL(url);
-
-//             toast.success("Assets exported successfully");
-//         },
-
-//         onError: toastError,
-//     });
-// };
-
 export const useDeleteAssetMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -583,7 +520,7 @@ export const useUploadAssetImageMutation = () => {
     return useMutation({
         mutationFn: async ({ file, plantId }: { file: File; plantId: string }) => {
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("image", file);   // ✅ matches upload.single("image")
             formData.append("plant_id", plantId);
             const { data } = await api.post(
                 assetEndpoints.UPLOAD_ASSET_IMAGE,

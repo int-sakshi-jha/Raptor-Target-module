@@ -5,7 +5,7 @@ import {
     useGetAssetDetailsQuery,
     useDeleteAssetMutation,
 } from "@/services/operations/assetsAPI";
-import Badge,{type BadgeVariant} from "@/components/common/ColorBadge";
+import Badge, { type BadgeVariant } from "@/components/common/ColorBadge";
 import AssetForm from "@/components/core/form/AssetForm";
 import Button from "@/components/common/Button";
 import Spinner from "@/components/common/Spinner";
@@ -40,14 +40,14 @@ import { formateDateTime } from "@/utils/gridFormatters";
 
 export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     const map: Record<string, { variant: BadgeVariant; label: string }> = {
-        in_stock: { variant: "gray",   label: "In Stock" },
-        inStock:  { variant: "gray",   label: "In Stock" },
-        active:   { variant: "green",  label: "Active" },
-        inactive: { variant: "gray",   label: "Inactive" },
-        faulty:   { variant: "no",     label: "Faulty" },
+        in_stock: { variant: "gray", label: "In Stock" },
+        inStock: { variant: "gray", label: "In Stock" },
+        active: { variant: "green", label: "Active" },
+        inactive: { variant: "gray", label: "Inactive" },
+        faulty: { variant: "no", label: "Faulty" },
         under_maintenance: { variant: "orange", label: "Under Maintenance" },
-        dead:     { variant: "gray",   label: "Dead" },
-        replaced: { variant: "blue",   label: "Replaced" },
+        dead: { variant: "gray", label: "Dead" },
+        replaced: { variant: "blue", label: "Replaced" },
     };
 
     const entry = map[status] ?? { variant: "gray" as BadgeVariant, label: status };
@@ -351,20 +351,20 @@ const AssetDetails: React.FC = () => {
                                     title="Specifications"
                                     description="Technical specifications for this asset"
                                 />
-                                <div className="p-2 space-y-1">
+                                <div
+                                    className="p-2 max-h-64 overflow-y-auto space-y-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                                >
                                     {Object.entries(asset.specifications).map(([key, value]) => (
                                         <div
                                             key={key}
-                                            className="flex items-center gap-4 rounded-sm border border-neutral-200 dark:border-neutral-dark-200 bg-neutral-50 dark:bg-neutral-dark-50 px-4 py-3"
+                                            className="flex items-center justify-between gap-4 rounded-sm border border-neutral-200 dark:border-neutral-dark-200 bg-neutral-50 dark:bg-neutral-dark-50 px-4 py-3"
                                         >
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-dark-400 uppercase tracking-wide">
-                                                    {key}
-                                                </p>
-                                                <p className="text-sm font-medium text-neutral-800 dark:text-neutral-dark-900 mt-0.5">
-                                                    {String(value)}
-                                                </p>
-                                            </div>
+                                            <p className="text-[10px] font-medium text-neutral-500 dark:text-neutral-dark-400 uppercase tracking-wide">
+                                                {key}
+                                            </p>
+                                            <p className="text-xs font-medium text-neutral-800 dark:text-neutral-dark-900 text-right">
+                                                {String(value)}
+                                            </p>
                                         </div>
                                     ))}
                                 </div>
@@ -379,7 +379,9 @@ const AssetDetails: React.FC = () => {
                                 title="Status history"
                                 description="All status changes recorded for this asset"
                             />
-                            <div className="p-2 space-y-2">
+                            <div
+                                className="p-2 max-h-64 overflow-y-auto space-y-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                            >
                                 {asset.status_history.map((entry: any, idx: number, arr: any[]) => {
                                     const prev = arr[idx - 1];
                                     const fromStatus: string | null = prev?.status ?? null;

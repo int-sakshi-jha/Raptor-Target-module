@@ -199,10 +199,10 @@ export const assetEndpoints={
 export const ticketEndpoints={
   CREATE_TICKET:"/ticket",
   GET_TICKET_BY_ID:(id:String)=>`/ticket/${id}`,
-  GET_MY_TICKETS:"/my",
+  GET_MY_TICKETS:"/tickets/me",
   GET_ALL_TICKETS:"/tickets",
   UPDATE_TICKET:(id:String)=>`/ticket/${id}`,
-  DELETE_TICKET:"",
+  DELETE_TICKET:(id:String)=>`/ticket/${id}`,
   ASSIGN_TICKET:"",
   REASSIGN_TICKET:"",
   GET_TICKET_HISTORY:"",
@@ -210,9 +210,9 @@ export const ticketEndpoints={
 }
 
 export const commentsEndpoints = {
-    CREATE_COMMENT: `/comment`,
-    GET_COMMENTS_BY_TICKET_ID: (ticketId: string | number) => `/comments/${ticketId}`,
-    UPDATE_COMMENT: (commentId: string | number) => `/comment/${commentId}`,
+    CREATE_COMMENT:(entityId: string|Number)=> `/comment/${entityId}`,
+    GET_COMMENTS_BY_TICKET_ID: (entityId: string|Number) => `/comments/${entityId}`,
+    UPDATE_COMMENT: (entityId: string|Number,commentId: string|Number) => `/comment/${entityId}/${commentId}`,
 } as const;
 
 export const targetEndpoints={

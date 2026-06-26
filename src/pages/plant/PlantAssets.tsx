@@ -60,6 +60,7 @@ import { PERMISSIONS, hasPermission, } from "@/utils/permissions";
 import AssetReplacementForm from "@/components/core/form/AssetReplacementForm";
 import AssetScanForm from "@/components/core/form/AssetScanForm";
 
+
 // ─── Entity key ───────────────────────────────────────────────────────────────
 
 const ASSET_ENTITY_KEY = "plantAsset";
@@ -129,13 +130,9 @@ function toAssetApiFilters(filters: FilterValues): AssetListFilters {
 const assetRowActionsCellRenderer =
   createCrudRowActionsCellRenderer<AssetRow>({
     actions: [
-      // buildEditRowAction("assetGrid_openEdit",PERMISSIONS.ASSET.UPDATE),
-      // buildDeleteRowAction("assetGrid_requestDelete",PERMISSIONS.ASSET.DELETE),
-      // buildReplaceRowAction("assetGrid_replaceAsset",PERMISSIONS.ASSET.REPLACE)
-
-      buildEditRowAction("assetGrid_openEdit"),
-      buildDeleteRowAction("assetGrid_requestDelete"),
-      buildReplaceRowAction("assetGrid_replaceAsset")
+      buildEditRowAction("assetGrid_openEdit",PERMISSIONS.ASSET.UPDATE),
+      buildDeleteRowAction("assetGrid_requestDelete",PERMISSIONS.ASSET.DELETE),
+      buildReplaceRowAction("assetGrid_replaceAsset",PERMISSIONS.ASSET.REPLACE)
     ],
   });
 
@@ -170,16 +167,36 @@ const PlantAssets: React.FC = () => {
   const columnPanelRef = React.useRef<{ openPanel: () => void }>(null);
   const tableRef = React.useRef<CommonTableHandle>(null);
   const importFileRef = React.useRef<HTMLInputElement>(null);
+  const [scanPrefill, setScanPrefill] = useState<Partial<AssetRow> | null>(null);
+
+  const handleScanResult = (result: any) => {
+    setShowScan(false);
+    if (result?.exists && result?.asset) {
+      setEditingAsset(result.asset);
+      setScanPrefill(null);
+      setShowEdit(true);
+    } else {
+      setScanPrefill(result ?? {});
+      setShowCreate(true);
+    }
+  };
 
   // ── API filters ───────────────────────────────────────────────────────────
   const apiFilters = useMemo(() => toAssetApiFilters(filters), [filters]);
 
   const actionsColumn: CommonColumnConfig = useMemo(() => getActionsColumn(assetRowActionsCellRenderer), []);
 
+  const gridContextRevision = useMemo(() => {
+    return [...(userPermissions ?? [])]
+      .map((p) => String(p).toLowerCase())
+      .sort()
+      .join("|");
+  }, [userPermissions]);
+
   const gridContext = useMemo(
     () => ({
+      userPermissions,
       assetGrid_openEdit: (row: AssetRow) => {
-        console.log(row)
         setEditingAsset(row);
         setShowEdit(true);
       },
@@ -193,14 +210,11 @@ const PlantAssets: React.FC = () => {
         setConfirmOpen(true);
       },
       assetGrid_replaceAsset: (id: string) => {
-
-        console.log("Replace asset id:", id);
-
         setAssetToReplaceId(id);
         setShowReplace(true);
       }
     }),
-    []
+    [userPermissions]
   );
 
   // ── Data query ────────────────────────────────────────────────────────────
@@ -248,7 +262,7 @@ const PlantAssets: React.FC = () => {
 
   const assetColumns: CommonColumnConfig[] = useMemo(
     () => [
-      getLinkColumn("name", "Name", (params) => (params.data?.id ? `/plants/${plantId}/asset/${params.data.id}` : null), { minWidth: 220, pinned: "left", editable: true }),
+      getLinkColumn("name", "Name", (params) => (hasPermission(userPermissions, PERMISSIONS.ASSET.GET_SPECIFIC) && params.data?.id ? `/plants/${plantId}/asset/${params.data.id}` : null), { minWidth: 220, pinned: "left", editable: true }),
       // buildDisplayTextColumn("code", "Code", { minWidth: 140 }),
       buildDisplayTextColumn("category_name", "Category", { minWidth: 180 }),
       buildDisplayTextColumn("component_type", "Component Type", { minWidth: 180 }),
@@ -333,11 +347,9 @@ const PlantAssets: React.FC = () => {
 
       getDateColumn("updated_at", "Updated At"),
     ],
-    [],
+    [plantId, userPermissions],
   );
 
-
-  // ── Filter fields ─────────────────────────────────────────────────────────
   const filterFields: FilterFieldConfig[] = useMemo(() => {
     const sortFields = buildSortFilterFields({
       sortOptions: ASSET_SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
@@ -425,6 +437,7 @@ const PlantAssets: React.FC = () => {
           />
           <div className="flex-1 min-h-0 overflow-hidden">
             <CommonDataView
+              key={ASSET_ENTITY_KEY}
               data={tableData}
               loading={isLoading}
               entityKey={ASSET_ENTITY_KEY}
@@ -437,6 +450,7 @@ const PlantAssets: React.FC = () => {
               page={page}
               pageSize={pageSize}
               gridContext={gridContext}
+              gridContextRevision={gridContextRevision}
               total={pagination?.totalCount ?? 0}
               totalPages={pagination?.totalPages ?? 1}
               pageStateConfig={{ setPage, setPageSize }}
@@ -444,7 +458,7 @@ const PlantAssets: React.FC = () => {
               columnSelectorTitle="Asset Columns"
               columnStateConfig={{
                 setColumns: setLocalColumns,
-                actionsColumn: actionsColumn,
+                actionsColumn,
               }}
               columnPanelRef={columnPanelRef}
               filterFields={filterFields}
@@ -461,23 +475,24 @@ const PlantAssets: React.FC = () => {
             // customCardComponent={AssetCard}
             />
           </div>
+          
 
         </div>
       </main>
       <Modal
         open={showCreate}
-        onClose={() => setShowCreate(false)}
+        onClose={() => { setShowCreate(false); setScanPrefill(null); }}
         title="Create Asset"
         subtitle="Add a new asset to keep the track"
         icon={Factory}
         maxWidth="max-w-3xl"
       >
         <AssetForm
+          key={showCreate ? (scanPrefill ? "scan" : "blank") : "closed"}
           mode="create"
-          onSuccess={() =>
-            setShowCreate(false)
-          }
-          close={() => setShowCreate(false)}
+          scanPrefill={scanPrefill}
+          onSuccess={() => { setShowCreate(false); setScanPrefill(null); }}
+          close={() => { setShowCreate(false); setScanPrefill(null); }}
           isOpen={showCreate}
         />
       </Modal>
@@ -496,14 +511,17 @@ const PlantAssets: React.FC = () => {
         {editingAsset && (
           <AssetForm
             mode="edit"
+            scanPrefill={scanPrefill}
             initialValues={editingAsset}
             onSuccess={() => {
               setShowEdit(false);
               setEditingAsset(null);
+              setScanPrefill(null);
             }}
             close={() => {
               setShowEdit(false);
               setEditingAsset(null);
+              setScanPrefill(null);
             }}
             isOpen={!!(showEdit && editingAsset)}
           />
@@ -547,6 +565,7 @@ const PlantAssets: React.FC = () => {
           plantId={plantId as string}
           onSuccess={() => setShowScan(false)}
           close={() => setShowScan(false)}
+          onScanResult={handleScanResult}
         />
       </Modal>
 

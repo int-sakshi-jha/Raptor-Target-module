@@ -285,26 +285,26 @@ export const routesConfig: RouteConfig[] = [
             path: "assets",
             element: PlantAssets,
             isPublic: false,
-            permissionsRequired: ["view-plant-detail"],
+            permissionsRequired: [],
           },
           {
             path: "asset/:id",
             element: AssetDetails,
             isPublic: false,
-            permissionsRequired: ["view-plant-detail"],
+            permissionsRequired: ["get-specific-asset"],
           },
 
           {
             path: "target",
             element: Target,
             isPublic: false,
-            permissionsRequired: ["view-plant-detail"],
+            permissionsRequired: [],
           },
           {
             path: "target/:id",
             element: TargetDetails,
             isPublic: false,
-            permissionsRequired: ["view-plant-detail"],
+            permissionsRequired: [],
           },
 
           {
@@ -407,7 +407,7 @@ export const routesConfig: RouteConfig[] = [
         element: TicketDetails,
         isNeutral: false,
         isPublic: false,
-        permissionsRequired: [],
+        permissionsRequired: ["get-specific-ticket"],
         children: undefined,
       },
 

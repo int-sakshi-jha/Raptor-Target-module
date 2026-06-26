@@ -346,71 +346,6 @@ const TargetForm: React.FC<TargetFormProps> = ({
                 <div className="space-y-2">
                     <SectionSubHeader icon={Box} title="Basic Information" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {/* <Controller
-                            name="tenant_id"
-                            control={control}
-                            rules={{ required: "Tenant is required" }}
-                            render={({ field }) => (
-                                <AsyncSelect
-                                    label="Tenant"
-                                    star
-                                    apiSearch
-                                    loadOptions={loadTenantOptions}
-                                    value={field.value}
-                                    onChange={(value) => {
-                                        const option = (value as Option | null) ?? null;
-                                        if (option?.value !== field.value?.value) {
-                                            setValue("plant_id", null);
-                                            setValue("component_id", null);
-                                            replace([]);
-                                            clearRecord(plantSearchCacheRef.current);
-                                            clearRecord(componentSearchCacheRef.current);
-                                            clearRecord(parameterSearchCacheRef.current);
-                                        }
-                                        field.onChange(option);
-                                    }}
-                                    errors={errors.tenant_id}
-                                    isClearable
-                                />
-                            )}
-                        />
-
-                        <Controller
-                            name="plant_id"
-                            control={control}
-                            rules={{ required: "Plant is required" }}
-                            render={({ field }) => (
-                                <AsyncSelect
-                                    label="Plant"
-                                    star
-                                    apiSearch
-                                    loadOptions={loadPlantOptions}
-                                    placeholder={selectedTenantId ? "Search plant..." : "Select a tenant first"}
-                                    isDisabled={!selectedTenantId}
-                                    value={
-                                        field.value
-                                            ? {
-                                                value: field.value.value,
-                                                label: plantLabelCache[field.value.value] ?? field.value.label,
-                                            }
-                                            : null
-                                    }
-                                    onChange={(value) => {
-                                        const option = (value as Option | null) ?? null;
-                                        if (option?.value !== field.value?.value) {
-                                            setValue("component_id", null);
-                                            replace([]);
-                                            clearRecord(componentSearchCacheRef.current);
-                                            clearRecord(parameterSearchCacheRef.current);
-                                        }
-                                        field.onChange(option);
-                                    }}
-                                    errors={errors.plant_id}
-                                    isClearable
-                                />
-                            )}
-                        /> */}
-
                         <Input
                             label="Target Name"
                             star
@@ -489,7 +424,7 @@ const TargetForm: React.FC<TargetFormProps> = ({
                             style={{ gridTemplateColumns: "1fr 0.75rem 1fr 1.25rem" }}
                         >
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                                Parameter
+                                Parameter <sup className="text-error-500 ml-1 dark:text-error-400">*</sup>
                             </span>
                             <span />
                             <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">

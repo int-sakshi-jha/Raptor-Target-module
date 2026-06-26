@@ -7,6 +7,7 @@ import {
 import CommonToolbar, {
     buildAddAction,
     buildColumnsAction,
+    buildDeleteAction,
     buildFiltersAction,
 } from "@/components/core/table/CommonToolbar";
 import {
@@ -42,7 +43,8 @@ import {
     buildDisplayTextColumn,
     getDateColumn,
     getActionsColumn,
-    getLinkColumn
+    getLinkColumn,
+    buildDisplayNumberColumn
 } from "@/components/core/table/ListPageHelpers";
 import {
     buildDeleteRowAction,
@@ -103,7 +105,7 @@ function toTicketApiFilters(filters: FilterValues): TicketListFilters {
 const ticketRowActionsCellRenderer = createCrudRowActionsCellRenderer<TicketRow>({
     actions: [
         buildEditRowAction("ticketGrid_openEdit", PERMISSIONS.TICKET.UPDATE),
-        // buildDeleteRowAction("ticketGrid_requestDelete"),
+        buildDeleteRowAction("ticketGrid_requestDelete",PERMISSIONS.TICKET.DELETE),
     ],
 });
 
@@ -137,17 +139,10 @@ const PlantTickets: React.FC = () => {
 
     const { permissions: userPermissions } = useAppSelector((state) => state.auth);
 
-    const canGetAll = hasPermission(
-        userPermissions,
-        PERMISSIONS.TICKET.GET_ALL
-    );
+    const canGetAll = hasPermission(userPermissions, PERMISSIONS.TICKET.GET_ALL);
+    const canGetMy = !canGetAll && hasPermission(userPermissions, PERMISSIONS.TICKET.GET_MY);
 
-    const canGetMy =
-        !canGetAll &&
-        hasPermission(
-            userPermissions,
-            PERMISSIONS.TICKET.GET_MY
-        );
+    const entityKey = canGetAll ? `${TICKET_ENTITY_KEY}-all` : `${TICKET_ENTITY_KEY}-my`;
 
     // ── API filters ───────────────────────────────────────────────────────────
     const apiFilters = useMemo(() => toTicketApiFilters(filters), [filters]);
@@ -157,44 +152,68 @@ const PlantTickets: React.FC = () => {
         [],
     );
 
+    const gridContextRevision = useMemo(() => {
+        return [...(userPermissions ?? [])]
+            .map((p) => String(p).toLowerCase())
+            .sort()
+            .join("|");
+    }, [userPermissions]);
+
     const gridContext = useMemo(
         () => ({
+            userPermissions,
             ticketGrid_openEdit: (row: TicketRow) => {
                 setEditingTicket(row);
                 setShowEdit(true);
             },
-            //   ticketGrid_requestDelete: (rowOrId: TicketRow | string) => {
-            //     const id = typeof rowOrId === "string" ? rowOrId : rowOrId?.id;
-            //     if (!id) return;
-            //     setConfirmTitle("Delete Asset");
-            //     setConfirmMessage("Are you sure you want to delete this asset? This action cannot be undone.");
-            //     setConfirmIds([id]);
-            //     confirmIdsRef.current = [id];
-            //     setConfirmOpen(true);
-            //   },
+              ticketGrid_requestDelete: (rowOrId: TicketRow | string) => {
+                const id = typeof rowOrId === "string" ? rowOrId : rowOrId?.id;
+                if (!id) return;
+                setConfirmTitle("Delete Asset");
+                setConfirmMessage("Are you sure you want to delete this asset? This action cannot be undone.");
+                setConfirmIds([id]);
+                confirmIdsRef.current = [id];
+                setConfirmOpen(true);
+              },
 
         }),
-        []
+        [userPermissions]
     );
 
 
 
     // ── Data query ────────────────────────────────────────────────────────────
     const {
-        data: ticketResponse,
-        isLoading,
-        isError,
-        error,
+        data: allTicketsResponse,
+        isLoading: isLoadingAll,
+        isError: isErrorAll,
+        error: errorAll,
     } = useGetAllTicketsQuery({
-
         search,
         filters: apiFilters,
         page,
         limit: pageSize,
-
+        enabled: canGetAll,
     });
 
-    console.log(ticketResponse)
+    const {
+        data: myTicketsResponse,
+        isLoading: isLoadingMy,
+        isError: isErrorMy,
+        error: errorMy,
+    } = useGetMyTicketsQuery({
+        search,
+        filters: apiFilters,
+        page,
+        limit: pageSize,
+        enabled: canGetMy,
+    });
+
+    const ticketResponse = canGetAll ? allTicketsResponse : myTicketsResponse;
+    const isLoading = canGetAll ? isLoadingAll : isLoadingMy;
+    const isError = canGetAll ? isErrorAll : isErrorMy;
+    const error = canGetAll ? errorAll : errorMy;
+
 
     const { data: userOptionsData } = useGetAllUsersQuery({});
     const userOptions =
@@ -228,14 +247,13 @@ const PlantTickets: React.FC = () => {
 
     // ── Derived data ──────────────────────────────────────────────────────────
     const tableData = useMemo(() => ticketResponse?.data?.tickets ?? [], [ticketResponse?.data]);
-    const pagination = useMemo(() => ticketResponse?.pagination, [ticketResponse?.pagination]);
-    console.log("tableData", tableData)
+    const pagination = useMemo(() => ticketResponse?.data?.pagination, [ticketResponse?.data?.pagination]);
     // ─── Column definitions ───────────────────────────────────────────────────
 
     const ticketColumns: CommonColumnConfig[] = useMemo(
         () => [
-            // buildDisplayNumberColumn("ticket_number", "Ticket Number", { minWidth: 120 }),
-            getLinkColumn("title", "Title", (params) => (params.data?.id ? `/ticket/${params.data.id}` : null), { minWidth: 220, pinned: "left", editable: true }),
+            getLinkColumn("ticket_number", "Ticket Number", (params) => (params.data?.id ? `/ticket/${params.data.id}` : null),{ minWidth: 120,pinned: "left" }),
+            buildDisplayTextColumn("title", "Title",  { minWidth: 220, editable: true }),
             buildDisplayTextColumn("status", "Status", { minWidth: 140 }),
             buildDisplayTextColumn("priority", "Priority", { minWidth: 130 }),
             buildDisplayTextColumn("plant_name", "Plant", { minWidth: 180 }),
@@ -244,11 +262,8 @@ const PlantTickets: React.FC = () => {
             buildDisplayTextColumn("phone_number", "Phone", { minWidth: 160 }),
             buildDisplayTextColumn("component_type", "Component Type", { minWidth: 180 }),
             buildDisplayTextColumn("component", "Component", { minWidth: 180 }),
-            buildDisplayTextColumn("assigned_to", "Assigned To", { minWidth: 180 }),
-            buildDisplayTextColumn("description", "Description", {
-                minWidth: 300,
-                visible: false,
-            }),
+            buildDisplayTextColumn("assignee_name", "Assigned To", { minWidth: 180 }),
+            
             getDateColumn("due_date", "Due Date", { minWidth: 160, dateOnly: true }),
             //   getDateColumn("resolved_at", "Resolved At", { minWidth: 180 }),
             //   buildDisplayTextColumn("feedback", "Feedback", {
@@ -270,7 +285,7 @@ const PlantTickets: React.FC = () => {
             //   getDateColumn("created_at", "Created At"),
             //   getDateColumn("updated_at", "Updated At"),
         ],
-        [],
+        [userPermissions],
     );
 
     // ── Filter fields ─────────────────────────────────────────────────────────
@@ -329,19 +344,19 @@ const PlantTickets: React.FC = () => {
 
     const toolbarActions = [
         buildAddAction(() => setShowCreate(true), hasPermission(userPermissions, PERMISSIONS.TICKET.CREATE)),
-        // buildDeleteAction(async () => {
-        //     if (selectedIds.length === 0) return;
-        //     setConfirmTitle("Delete Assets");
-        //     setConfirmMessage(
-        //         "Are you sure you want to delete the selected assets? This action cannot be undone.",
-        //     );
-        //     setConfirmIds([...selectedIds]);
-        //     confirmIdsRef.current = [...selectedIds];
-        //     setConfirmOpen(true);
-        // }, {
-        //     disabled: selectedIds.length === 0,
-        //     //   show: hasPermission(userPermissions, PERMISSIONS.ASSET.DELETE),
-        // }),
+        buildDeleteAction(async () => {
+            if (selectedIds.length === 0) return;
+            setConfirmTitle("Delete Assets");
+            setConfirmMessage(
+                "Are you sure you want to delete the selected assets? This action cannot be undone.",
+            );
+            setConfirmIds([...selectedIds]);
+            confirmIdsRef.current = [...selectedIds];
+            setConfirmOpen(true);
+        }, {
+            disabled: selectedIds.length === 0,
+            show: hasPermission(userPermissions, PERMISSIONS.TICKET.DELETE),
+        }),
         buildFiltersAction(),
         buildColumnsAction(),
     ];
@@ -371,7 +386,7 @@ const PlantTickets: React.FC = () => {
                         <CommonDataView
                             data={tableData}
                             loading={isLoading}
-                            entityKey={TICKET_ENTITY_KEY}
+                            entityKey={entityKey}
                             entityLabel="Ticket"
                             columns={localColumns}
                             defaultColumns={ticketColumns}
@@ -384,6 +399,7 @@ const PlantTickets: React.FC = () => {
                             totalPages={pagination?.totalPages ?? 1}
                             pageStateConfig={{ setPage, setPageSize }}
                             gridContext={gridContext}
+                            gridContextRevision={gridContextRevision}
                             onSelectionChanged={(ids: string[]) => setSelectedIds(ids)}
                             getRowId={(row: TicketRow) => row.id}
                             columnSelectorTitle="Ticket Columns"

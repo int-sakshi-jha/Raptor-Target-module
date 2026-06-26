@@ -8,7 +8,7 @@ import { cleanQueryFilters, toURLSearchParams, cleanEmptyStrings } from "@/utils
 
 //http://localhost:5000
 // ─── Interfaces ───────────────────────────────────────────────────────────────
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWVmNDE4LTU5ODgtNzU4YS04MzM2LTRkZGM4MGEwNWRkMyIsImlhdCI6MTc4MjIxMTY5NywiZXhwIjoyNjQ2MjExNjk3fQ.64ZJJ1iupov3XOstRJsiNnoaHvitpbCX42fn3QA6cNg";
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMDE5ZWFiN2UtZDFhOS03NmVkLTllYjgtMjEzZTQzZDc0ZTg2Iiwic2Vzc2lvbl9pZCI6IjAxOWYwNDAxLWQxNWYtNzUwZS04Nzk2LWJmMDc5YTVlNjQzYiIsImlhdCI6MTc4MjQ3ODY1NSwiZXhwIjoyNjQ2NDc4NjU1fQ.awOa_AfYBh896mqInwLL4YRQkLTlwAwQTXaOjb-fFz4";
 
 const api = axios.create({
   baseURL: "http://192.168.2.118:5000/api/v1",
@@ -404,7 +404,7 @@ export const useDeleteTicketMutation = () => {
     mutationFn: async (ticketIds: string[]) => {
       if (!ticketIds || ticketIds.length === 0) throw new Error("No ticket selected for deletion");
       await Promise.all(
-        ticketIds.map((id) => api.delete(ticketEndpoints.DELETE_TICKET)
+        ticketIds.map((id) => api.delete(ticketEndpoints.DELETE_TICKET(id))
       ));
       return { message: "Ticket deleted successfully" };
     },

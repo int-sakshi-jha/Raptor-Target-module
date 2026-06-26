@@ -11,6 +11,7 @@ type AssetScanFormProps = {
     plantId: string;
     onSuccess?: () => void;
     close?: () => void;
+    onScanResult?: (result: any) => void;
 };
 
 function base64ToFile(base64: string, filename: string): File {
@@ -33,6 +34,7 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
     plantId,
     onSuccess,
     close,
+    onScanResult,
 }) => {
     const [mode, setMode] = useState<Mode>("choice");
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -46,9 +48,6 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
     const uploadMutation = useUploadAssetImageMutation();
 
     // ── Camera lifecycle: starts/stops whenever `mode` flips to/from "camera" ──
-    // (video element only exists in the DOM once mode === "camera", so the
-    // stream must be attached AFTER that render, inside this effect — not
-    // inside the button's onClick handler.)
 
     useEffect(() => {
         if (mode !== "camera") return;
@@ -100,13 +99,13 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
 
         const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
         setPreviewUrl(dataUrl);
-        setMode("preview"); // triggers camera cleanup via the effect above
+        setMode("preview");
     };
 
     const retakePhoto = () => {
         setPreviewUrl(null);
         setCameraError(null);
-        setMode("camera"); // re-triggers the effect, restarting the stream
+        setMode("camera");
     };
 
     // ── Device upload ─────────────────────────────────────────────────────────
@@ -131,7 +130,7 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
     const clearSelection = () => {
         setPreviewUrl(null);
         setCameraError(null);
-        setMode("choice"); // useEffect cleanup stops any active stream
+        setMode("choice");
     };
 
     // ── Submit ─────────────────────────────────────────────────────────────────
@@ -144,8 +143,11 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
         uploadMutation.mutate(
             { file, plantId },
             {
-                onSuccess: () => {
+                onSuccess: (data) => {
+                    // API: { success, code, data: { message, data: { name, ... } } }
+                    const payload = (data as any)?.data?.data ?? (data as any)?.data ?? data;
                     clearSelection();
+                    onScanResult?.(payload);
                     onSuccess?.();
                     close?.();
                 },
@@ -253,7 +255,6 @@ const AssetScanForm: React.FC<AssetScanFormProps> = ({
                 </div>
             </div>
 
-            {/* hidden canvas used only for frame capture, never shown */}
             <canvas ref={canvasRef} className="hidden" />
 
             <input

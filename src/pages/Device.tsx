@@ -434,7 +434,7 @@ const Devices = () => {
 
   // ── Actions column ─────────────────────────────────────────────────────────
 
-  const actionsColumn: CommonColumnConfig = React.useMemo(() => getActionsColumn(deviceRowActionsCellRenderer),[],);
+  const actionsColumn: CommonColumnConfig = React.useMemo(() => getActionsColumn(deviceRowActionsCellRenderer),[]);
   
 
   // ── Query filters (API) ─────────────────────────────────────────────────────

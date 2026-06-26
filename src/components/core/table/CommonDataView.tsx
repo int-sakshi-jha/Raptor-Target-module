@@ -339,6 +339,12 @@ const CommonDataView: React.FC<CommonDataViewProps> = ({
     [columns]
   );
 
+  console.log("CommonDataView Rendered");
+console.log(
+  "Received actionsColumn:",
+  columnStateConfig?.actionsColumn
+);
+
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [showColumnPanel, setShowColumnPanel] = useState(false);
   useImperativeHandle(

@@ -53,8 +53,8 @@ type AssetFormProps = {
     initialValues?: Partial<AssetRow>;
     onSuccess?: () => void;
     close?: () => void;
+    scanPrefill?: Partial<AssetRow> | null;
     isOpen?: boolean;
-    
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -123,13 +123,39 @@ const DEFAULT_VALUES: AssetFormValues = {
     media_files: [],
 };
 
+/** Single source of truth for what values the form should show, in every mode. */
+function resolveDefaults(
+    isEdit: boolean,
+    resolvedInitialValues: Partial<AssetRow> | undefined,
+    mode: AssetFormMode,
+    scanPrefill: Partial<AssetRow> | null | undefined,
+): AssetFormValues {
+    if (isEdit && resolvedInitialValues) {
+        return buildEditFormValues(resolvedInitialValues);
+    }
+    if (mode === "create" && scanPrefill) {
+        return buildEditFormValues({
+            ...scanPrefill,
+            category_name: scanPrefill.category_name || "Other",
+            component_type: scanPrefill.component_type || "Other",
+            name: scanPrefill.name || "Other",
+            status: scanPrefill.status || "in_stock",
+            model_number: scanPrefill.model_number ?? "",
+            serial_number: scanPrefill.serial_number ?? "",
+            manufacturer_name: scanPrefill.manufacturer_name ?? "",
+            specifications: scanPrefill.specifications ?? {},
+        });
+    }
+    return DEFAULT_VALUES;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const AssetForm: React.FC<AssetFormProps> = ({
     mode = "create",
     initialValues,
     onSuccess,
-    
+    scanPrefill,
 }) => {
     const { id: plantId } = useParams<{ id: string }>();
     const isEdit = mode === "edit";
@@ -157,14 +183,10 @@ const AssetForm: React.FC<AssetFormProps> = ({
         control,
         formState: { errors },
     } = useForm<AssetFormValues>({
-        defaultValues:
-            isEdit && resolvedInitialValues
-                ? buildEditFormValues(resolvedInitialValues)
-                : DEFAULT_VALUES,
+        defaultValues: resolveDefaults(isEdit, resolvedInitialValues, mode, scanPrefill),
     });
 
     // ── Options ────────────────────────────────────────────────────────────────
-
 
     const { data: assetTypes } = useGetAssetTypeOptionsQuery();
 
@@ -179,7 +201,6 @@ const AssetForm: React.FC<AssetFormProps> = ({
 
     const loadComponentTypeOptions = useCallback(
         async (): Promise<Option[]> => {
-            console.log(data)
             return data ?? [];
         },
         [data]
@@ -204,9 +225,10 @@ const AssetForm: React.FC<AssetFormProps> = ({
     };
 
     useEffect(() => {
-        reset(isEdit && resolvedInitialValues ? buildEditFormValues(resolvedInitialValues) : DEFAULT_VALUES);
+        reset(resolveDefaults(isEdit, resolvedInitialValues, mode, scanPrefill));
         setShowAdvanced(isEdit);
-    }, [resolvedInitialValues, isEdit, reset]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resolvedInitialValues, isEdit, scanPrefill, mode, reset]);
 
     const isSubmitting =
         createMutation.isPending ||
@@ -214,27 +236,27 @@ const AssetForm: React.FC<AssetFormProps> = ({
         updateStatusMutation.isPending;
 
     // ── Submit (STATIC ONLY) ───────────────────────────────────────────────────
-    const onSubmit = async (data: AssetFormValues) => {
+    const onSubmit = async (formData: AssetFormValues) => {
         const finalData: CreateAssetInput = {
             plant_id: plantId ?? "",
-            category_name: data.category_name?.value ?? "",
-            component_type: data.component_type?.value ?? "",
-            name: data.name.trim(),
-            model_number: data.model_number.trim(),
-            serial_number: data.serial_number.trim(),
-            manufacturer_name: data.manufacturer_name.trim(),
-            specifications: data.specifications,
-            status: data.status?.value ?? "",
-            manufacture_date: data.manufacture_date || "",
-            installation_date: data.installation_date || "",
-            commissioning_date: data.commissioning_date || "",
-            purchase_date: data.purchase_date || "",
-            warranty_start_date: data.warranty_start_date || "",
-            warranty_end_date: data.warranty_end_date || "",
-            description: data.description.trim(),
-            retired_at: data.retired_at || null,
-            profile_url: data.profile_url || "",
-            media_files: data.media_files,
+            category_name: formData.category_name?.value ?? "",
+            component_type: formData.component_type?.value ?? "",
+            name: formData.name.trim(),
+            model_number: formData.model_number.trim(),
+            serial_number: formData.serial_number.trim(),
+            manufacturer_name: formData.manufacturer_name.trim(),
+            specifications: formData.specifications,
+            status: formData.status?.value ?? "in_stock",
+            manufacture_date: formData.manufacture_date || "",
+            installation_date: formData.installation_date || "",
+            commissioning_date: formData.commissioning_date || "",
+            purchase_date: formData.purchase_date || "",
+            warranty_start_date: formData.warranty_start_date || "",
+            warranty_end_date: formData.warranty_end_date || "",
+            description: formData.description.trim(),
+            retired_at: formData.retired_at || null,
+            profile_url: formData.profile_url || "",
+            media_files: formData.media_files,
         };
 
         if (isEdit && initialValues?.id) {
@@ -306,7 +328,7 @@ const AssetForm: React.FC<AssetFormProps> = ({
                         <Input
                             label="Asset Name"
                             star
-                            {...register("name", { required: "Required" })}
+                            {...register("name", { required: "Asset name is required" })}
                             errors={errors.name}
                         />
 
@@ -327,30 +349,29 @@ const AssetForm: React.FC<AssetFormProps> = ({
                         />
 
                         <Input label="Model Number" {...register("model_number")} />
-                        <Input label="Serial Number" star {...register("serial_number",{ required: "Required" })} />
+                        <Input 
+                        label="Serial Number" 
+                        star 
+                        {...register("serial_number", { required: "Serial No is required" })}
+                        errors={errors.serial_number}
+                         />
                         <Input label="Manufacturer" {...register("manufacturer_name")} />
                         <div className="space-y-2 md:col-span-2">
                             <SectionSubHeader icon={Settings} title="Specifications" />
                             <div className="rounded-xs border border-neutral-100 dark:border-neutral-700/60 bg-neutral-50 dark:bg-neutral-dark-100 p-3">
-                                
-                                    <TagMapBuilder
-                                        key={`asset-specifications-${isEdit ? "edit" : "create"}`}
-                                        initialConfig={watch("specifications") || {}}
-                                        onChange={(value) =>
-                                            setValue("specifications", toSpecificationRecord(value), {
-                                                shouldDirty: true,
-                                            })
-                                        }
-                                        previewLabel="specifications"
-                                    />
-
-                                
-
+                                <TagMapBuilder
+                                    key={`asset-specifications-${isEdit ? "edit" : "create"}`}
+                                    initialConfig={watch("specifications") || {}}
+                                    onChange={(value) =>
+                                        setValue("specifications", toSpecificationRecord(value), {
+                                            shouldDirty: true,
+                                        })
+                                    }
+                                    previewLabel="specifications"
+                                />
                             </div>
                         </div>
-                        <div className="md:col-span-2">
-
-                        </div>
+                        <div className="md:col-span-2"></div>
                     </div>
                 </div>
 
@@ -397,9 +418,7 @@ const AssetForm: React.FC<AssetFormProps> = ({
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
-                    onClick={() =>
-                        reset(isEdit && resolvedInitialValues ? buildEditFormValues(resolvedInitialValues) : DEFAULT_VALUES)
-                    }
+                    onClick={() => reset(resolveDefaults(isEdit, resolvedInitialValues, mode, scanPrefill))}
                 >
                     Reset
                 </Button>
